@@ -99,9 +99,6 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
                 // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
                 noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
                 Toast.makeText(requireContext(), "Notes and categories linked successfully", Toast.LENGTH_SHORT).show()
-
-                Log.d("TAG", "showCategorizeDialog: $selectedNotes")
-                Log.d("TAG", "showCategorizeDialog: $selectedCategories")
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel") { dialog, which ->

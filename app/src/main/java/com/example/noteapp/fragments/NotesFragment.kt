@@ -24,10 +24,15 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteapp.R
 import com.example.noteapp.activities.EditNoteActivity
 import com.example.noteapp.activities.MainActivity
+import com.example.noteapp.adapter.ListCategoryAdapter
 import com.example.noteapp.adapter.ListNoteAdapter
 import com.example.noteapp.databinding.FragmentNotesBinding
 import com.example.noteapp.listeners.OnItemClickListener
+import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
+import com.example.noteapp.models.NoteCategoryCrossRef
+import com.example.noteapp.viewmodel.CategoryViewModel
+import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
 import java.util.Calendar
 
@@ -39,10 +44,14 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private lateinit var noteViewModel: NoteViewModel
+    private lateinit var noteCategoryViewModel: NoteCategoryViewModel
+    private lateinit var categoryViewModel: CategoryViewModel
     private lateinit var noteAdapter: ListNoteAdapter
+    private lateinit var categoryAdapter: ListCategoryAdapter
     private lateinit var currentList: List<Note>
     private lateinit var noteView: View
     private var isAlternateMenuVisible: Boolean = false
+    private lateinit var categories: List<Category>
     private lateinit var toolbar: Toolbar
 
     override fun onCreateView(
@@ -61,6 +70,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         setHasOptionsMenu(true)
 
         noteViewModel = (activity as MainActivity).noteViewModel
+        categoryViewModel = (activity as MainActivity).categoryViewModel
+        noteCategoryViewModel = (activity as MainActivity).noteCategoryViewModel
         noteView = view
 
         setupNoteRecyclerView()
@@ -103,6 +114,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             }
         })
 
+        categoryAdapter = ListCategoryAdapter(requireContext())
+
         binding.listNoteRecyclerView.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.listNoteRecyclerView.adapter = noteAdapter
@@ -112,6 +125,13 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                 noteAdapter.differ.submitList(note)
                 currentList = noteAdapter.differ.currentList
                 updateUI(note)
+            }
+        }
+
+        activity?.let {
+            categoryViewModel.getAllCategory().observe(viewLifecycleOwner){category ->
+                categoryAdapter.differ.submitList(category)
+                categories = categoryAdapter.differ.currentList
             }
         }
     }
@@ -138,6 +158,47 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         return formattedDate
     }
 
+    //them note vao cac the loai
+    private fun showCategorizeDialog() {
+        val checkedItem = BooleanArray(categories.size)
+
+        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
+        builder.setTitle("Select category")
+            .setPositiveButton("OK") { dialog, which ->
+                val selectedCategories = mutableListOf<Category>()
+                val unSelectedCategories = mutableListOf<Category>()
+                for(i in categories.indices){
+                    if(checkedItem[i]){
+                        selectedCategories.add(categories[i])
+                    } else {
+                        unSelectedCategories.add(categories[i])
+                    }
+                }
+
+                // Tạo danh sách NoteCategoryCrossRef để liên kết note với category
+                val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
+                val selectedNotes = noteAdapter.getSelectedItems()
+
+                for(noteId in selectedNotes.map { it.id }){
+                    noteCategoryViewModel.deleteNoteCategoryCrossRefs(noteId)
+                    for(categoryId in selectedCategories.map { it.id }){
+                        noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
+                    }
+                }
+
+                // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
+                noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
+                Toast.makeText(requireContext(), "Notes and categories linked successfully", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
+            .setMultiChoiceItems(categories.map { it.categoryName }.toTypedArray(), checkedItem){ dialog, which, isChecked ->
+                checkedItem[which] = isChecked
+            }
+        builder.create().show()
+    }
 
     private fun showDeleteDialog() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
@@ -271,7 +332,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             }
 
             R.id.categorize -> {
-                false
+                showCategorizeDialog()
+                true
             }
 
             else -> {

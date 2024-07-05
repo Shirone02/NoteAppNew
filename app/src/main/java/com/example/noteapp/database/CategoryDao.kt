@@ -24,7 +24,11 @@ interface CategoryDao {
     @Query("select * from categories order by id desc")
     fun getAllCategories(): LiveData<List<Category>>
 
-    @Query("select categoryName from categories where id = :id")
-    fun getCategoryNameById(id: Int): String
+    @Query("select categories.categoryName " +
+            "from categories " +
+            "left join note_category_cross_ref " +
+            "on categories.id = note_category_cross_ref.categoryId" +
+            " where noteId = :id")
+    fun getCategoryNameById(id: Int): List<String>
 
 }

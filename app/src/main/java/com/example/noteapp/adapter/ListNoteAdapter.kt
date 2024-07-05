@@ -1,6 +1,7 @@
 package com.example.noteapp.adapter
 
 import android.annotation.SuppressLint
+import android.content.Context
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
@@ -17,7 +18,7 @@ import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
 
 class ListNoteAdapter(
-    private val onItemClickListener: OnItemClickListener
+    private val onItemClickListener: OnItemClickListener,
 ) : RecyclerView.Adapter<ListNoteAdapter.viewholder>() {
 
     private val differCallBack = object : DiffUtil.ItemCallback<Note>() {
@@ -63,7 +64,12 @@ class ListNoteAdapter(
 
         holder.time.text = "Last edit: " + differ.currentList[position].time
 
-        holder.category.text = "Category: " + categoryViewModel.getCategoryNameById(differ.currentList[position].id)
+        val categoryList = categoryViewModel.getCategoryNameById(differ.currentList[position].id)
+        if(categoryList.size > 2){
+            holder.category.text = "Category: ${categoryList[0]},${categoryList[1]}, (+${categoryList.size-2})"
+        } else {
+            holder.category.text = "Category: $categoryList"
+        }
 
         holder.itemView.isSelected = selectedItems.contains(differ.currentList[position])
 

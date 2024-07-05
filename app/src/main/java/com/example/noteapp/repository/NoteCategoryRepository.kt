@@ -9,4 +9,7 @@ class NoteCategoryRepository(private val db: NoteDatabase) {
 
     suspend fun insertNoteCategoryCrossRefs(noteCategoryCrossRefs: List<NoteCategoryCrossRef>) =
         db.noteCategoryCrossRefDao().insertNoteCategoryCrossRefs(noteCategoryCrossRefs)
+
+    suspend fun deleteNoteCategoryCrossRefs(id: Int) =
+        db.noteCategoryCrossRefDao().deleteNoteCategoryCrossRefs(id)
 }

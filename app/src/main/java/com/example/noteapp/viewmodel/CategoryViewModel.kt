@@ -22,5 +22,5 @@ class CategoryViewModel(application: Application, private val categoryRepository
 
     fun getAllCategory() = categoryRepository.getAllCategory()
 
-    fun getCategoryNameById(id: Int) = categoryRepository.getCategoryNameById(id)
+     fun getCategoryNameById(id: Int) = categoryRepository.getCategoryNameById(id)
 }
