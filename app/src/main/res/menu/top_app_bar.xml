@@ -7,20 +7,19 @@
         android:icon="@drawable/ic_search"
         android:title="Search"
         app:actionViewClass="androidx.appcompat.widget.SearchView"
-        android:iconTint="@color/white"
+        app:iconTint="@color/white"
         app:showAsAction="ifRoom|collapseActionView" />
 
     <item
         android:id="@+id/sort"
         android:title="Sort"
-        android:iconTint="@color/white"
+        app:iconTint="@color/white"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/categorize"
+        android:id="@+id/more"
         android:icon="@drawable/ic_option1"
-        android:iconTint="@color/white"
-        android:title="Categorized"
+        android:title="More"
         android:contentDescription="Categorized"
         app:showAsAction="never" />
 

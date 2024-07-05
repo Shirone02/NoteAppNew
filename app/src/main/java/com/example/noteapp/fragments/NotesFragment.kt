@@ -12,8 +12,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.lifecycle.Lifecycle
@@ -29,15 +32,18 @@ import com.example.noteapp.viewmodel.NoteViewModel
 import java.util.Calendar
 
 
-class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
+class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTextListener {
 
     private val binding: FragmentNotesBinding by lazy {
         FragmentNotesBinding.inflate(layoutInflater)
     }
 
     private lateinit var noteViewModel: NoteViewModel
-    lateinit var noteAdapter: ListNoteAdapter
+    private lateinit var noteAdapter: ListNoteAdapter
     private lateinit var currentList: List<Note>
+    private lateinit var noteView: View
+    private var isAlternateMenuVisible: Boolean = false
+    private lateinit var toolbar: Toolbar
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -50,14 +56,14 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-//        val menuHost: MenuHost = requireActivity()
-//        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        val menuHost: MenuHost = requireActivity()
+        menuHost.addMenuProvider(this, viewLifecycleOwner, Lifecycle.State.RESUMED)
+        setHasOptionsMenu(true)
 
         noteViewModel = (activity as MainActivity).noteViewModel
+        noteView = view
 
         setupNoteRecyclerView()
-
-        currentList = noteAdapter.differ.currentList
 
         binding.addNoteFab.setOnClickListener { addNote() }
 
@@ -77,6 +83,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
         Toast.makeText(context, "Add successful !!!", Toast.LENGTH_SHORT).show()
     }
 
+    //set up recycler View
     private fun setupNoteRecyclerView() {
         noteAdapter = ListNoteAdapter(object : OnItemClickListener {
             override fun onNoteClick(note: Note, isChoose: Boolean) {
@@ -87,14 +94,12 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
                     intent.putExtra("content", note.content)
                     intent.putExtra("categoryId", note.categoryId)
                     startActivity(intent)
-                } else {
-                    (activity as MainActivity).binding.topAppBar.setTitle("${noteAdapter.getSelectedItemsCount()}")
-                    Log.d("TAG", "onNoteClick: ${noteAdapter.getSelectedItems()}")
                 }
             }
 
             override fun onNoteLongClick(note: Note) {
-                (activity as MainActivity).showDeleteIcon()
+                isAlternateMenuVisible = true
+                requireActivity().invalidateOptionsMenu()
             }
         })
 
@@ -105,6 +110,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
         activity?.let {
             noteViewModel.getAllNote().observe(viewLifecycleOwner) { note ->
                 noteAdapter.differ.submitList(note)
+                currentList = noteAdapter.differ.currentList
                 updateUI(note)
             }
         }
@@ -133,7 +139,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
     }
 
 
-    fun showDeleteDialog() {
+    private fun showDeleteDialog() {
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
 
         builder.setTitle("Delete")
@@ -155,11 +161,13 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
         noteAdapter.removeSelectedItems()
     }
 
+    // hien thi menu delete khi icon duoc chon
+
     fun clearSelection() {
         noteAdapter.clearSelection()
     }
 
-    fun showOptionDialog() {
+    private fun showOptionDialog() {
         val sortOption = arrayOf(
             "edit date: from newest",
             "edit date: from oldest",
@@ -217,8 +225,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
         return noteAdapter.differ.submitList(noteList.sortedByDescending { it.time })
     }
 
-    fun searchNote(query: String?) {
-        Log.d("TAG", "searchNote: $query")
+    private fun searchNote(query: String?) {
         if (query != null) {
             if (query.isEmpty()) {
                 noteAdapter.differ.submitList(currentList)
@@ -230,37 +237,60 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider {
         }
     }
 
-
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menu.clear()
-        menuInflater.inflate(R.menu.top_app_bar, menu)
+        menuInflater.inflate(
+            if (isAlternateMenuVisible) {
+                R.menu.menu_selection
+            } else {
+                R.menu.top_app_bar
+            }, menu)
+
+        if (!isAlternateMenuVisible) {
+            val menuSearch = menu.findItem(R.id.search).actionView as SearchView
+            menuSearch.isSubmitButtonEnabled = false
+            menuSearch.setOnQueryTextListener(this)
+        }
     }
 
     override fun onMenuItemSelected(menuItem: MenuItem): Boolean {
         return when (menuItem.itemId) {
-            R.id.search -> {
-                val searchView = menuItem.actionView as SearchView
-                searchView.setOnQueryTextListener(object : OnQueryTextListener {
-                    override fun onQueryTextSubmit(query: String?): Boolean {
-                        return false
-                    }
-
-                    override fun onQueryTextChange(newText: String?): Boolean {
-                        if (newText.isNullOrEmpty()) {
-                            noteAdapter.differ.submitList(currentList)
-                        } else {
-                            searchNote(newText)
-                        }
-                        return true
-                    }
-                })
+            R.id.sort -> {
+                showOptionDialog()
                 true
+            }
+
+            R.id.selectAll -> {
+                noteAdapter.selectAllItem()
+                true
+            }
+
+            R.id.delete -> {
+                showDeleteDialog()
+                true
+            }
+
+            R.id.categorize -> {
+                false
             }
 
             else -> {
                 false
             }
         }
+    }
+
+    override fun onQueryTextSubmit(query: String?): Boolean {
+        return false
+    }
+
+    override fun onQueryTextChange(newText: String?): Boolean {
+        if (newText.isNullOrEmpty()) {
+            noteAdapter.differ.submitList(currentList)
+        } else {
+            searchNote(newText)
+        }
+        return true
     }
 }
 

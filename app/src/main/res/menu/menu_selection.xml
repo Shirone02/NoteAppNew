@@ -5,22 +5,21 @@
         android:id="@+id/selectAll"
         android:icon="@drawable/ic_select_all"
         android:title="Delete"
-        android:iconTint="@color/white"
+        app:iconTint="@color/white"
         app:showAsAction="ifRoom"/>
 
     <item
         android:id="@+id/delete"
         android:icon="@drawable/ic_delete"
-        android:iconTint="@color/white"
+        app:iconTint="@color/white"
         android:title="Select All"
         app:showAsAction="ifRoom"/>
 
     <item
-        android:id="@+id/more"
+        android:id="@+id/categorize"
         android:icon="@drawable/ic_option1"
-        android:iconTint="@color/white"
-        android:title="More"
-        android:contentDescription="More"
+        android:title="Categorize"
+        android:contentDescription="Categorize"
         app:showAsAction="never" />
 
 </menu>
