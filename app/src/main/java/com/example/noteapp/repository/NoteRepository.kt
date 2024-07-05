@@ -9,8 +9,8 @@ class NoteRepository(private val db: NoteDatabase) {
     suspend fun updateNote(note: Note) = db.getNoteDao().updateNote(note)
     suspend fun deleteByIds(ids: List<Int>) = db.getNoteDao().deleteByIds(ids)
 
+    fun getNotesWithoutCategory() = db.getNoteDao().getNotesWithoutCategory()
     fun getAllNote() = db.getNoteDao().getAllNotes()
     fun searchNote(query: String) = db.getNoteDao().searchNote(query)
-    fun getNotesByCategory(categoryId: Int?) = db.getNoteDao().getNotesByCategory(categoryId)
-
+    fun getNotesWithCategories() = db.getNoteDao().getNotesWithCategories()
 }

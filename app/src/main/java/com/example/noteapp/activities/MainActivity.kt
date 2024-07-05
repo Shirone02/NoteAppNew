@@ -35,9 +35,12 @@ import com.example.noteapp.fragments.UncategorizedFragment
 import com.example.noteapp.listeners.OnItemClickListener
 import com.example.noteapp.models.Note
 import com.example.noteapp.repository.CategoryRepository
+import com.example.noteapp.repository.NoteCategoryRepository
 import com.example.noteapp.repository.NoteRepository
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.CategoryViewModelFactory
+import com.example.noteapp.viewmodel.NoteCategoryViewModel
+import com.example.noteapp.viewmodel.NoteCategoryViewModelFactory
 import com.example.noteapp.viewmodel.NoteViewModel
 import com.example.noteapp.viewmodel.NoteViewModelFactory
 import com.google.android.material.appbar.MaterialToolbar
@@ -54,7 +57,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     lateinit var noteViewModel: NoteViewModel
     lateinit var categoryViewModel: CategoryViewModel
-    private lateinit var noteAdapter: ListNoteAdapter
+    lateinit var noteCategoryViewModel : NoteCategoryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -104,14 +107,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     private fun setUpViewModel() {
         val noteRepository = NoteRepository(NoteDatabase(this))
         val categoryRepository = CategoryRepository(NoteDatabase(this))
+        val noteCategoryRepository = NoteCategoryRepository(NoteDatabase(this))
 
         val categoryViewModelProviderFactory =
             CategoryViewModelFactory(application, categoryRepository)
         val viewModelProviderFactory = NoteViewModelFactory(application, noteRepository)
+        val noteCategoryViewModelFactory = NoteCategoryViewModelFactory(application, noteCategoryRepository)
 
         categoryViewModel =
             ViewModelProvider(this, categoryViewModelProviderFactory)[CategoryViewModel::class.java]
+
         noteViewModel = ViewModelProvider(this, viewModelProviderFactory)[NoteViewModel::class.java]
+        noteCategoryViewModel = ViewModelProvider(this, noteCategoryViewModelFactory)[NoteCategoryViewModel::class.java]
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

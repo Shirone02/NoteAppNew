@@ -10,9 +10,9 @@
             android:title="Notes" />
     </group>
 
-    <item android:title="Categories">
+    <item android:id="@+id/nav_category_list" android:title="Categories">
         <menu>
-            <group android:checkableBehavior="single">
+            <group android:id="@+id/nav_category_menu" android:checkableBehavior="single">
                 <item
                     android:id="@+id/nav_uncategorized"
                     android:icon="@drawable/ic_note"

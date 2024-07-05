@@ -63,7 +63,7 @@ class ListNoteAdapter(
 
         holder.time.text = "Last edit: " + differ.currentList[position].time
 
-        holder.category.text = categoryViewModel.getCategoryNameById(differ.currentList[position].id)
+        holder.category.text = "Category: " + categoryViewModel.getCategoryNameById(differ.currentList[position].id)
 
         holder.itemView.isSelected = selectedItems.contains(differ.currentList[position])
 

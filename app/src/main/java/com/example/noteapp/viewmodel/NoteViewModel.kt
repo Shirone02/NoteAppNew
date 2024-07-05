@@ -28,5 +28,7 @@ class NoteViewModel (app: Application, private val noteRepository: NoteRepositor
         noteRepository.deleteByIds(ids)
     }
 
-    fun getNotesByCategory(categoryId: Int?) = noteRepository.getNotesByCategory(categoryId)
+    fun getNotesWithoutCategory() = noteRepository.getNotesWithoutCategory()
+
+    fun getNotesWithCategories() = noteRepository.getNotesWithCategories()
 }

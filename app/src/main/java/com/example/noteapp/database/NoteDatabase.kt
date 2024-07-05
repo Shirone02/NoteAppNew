@@ -6,13 +6,15 @@ import androidx.room.Room
 import androidx.room.RoomDatabase
 import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
+import com.example.noteapp.models.NoteCategoryCrossRef
 
 
-@Database(entities = [Note::class, Category::class], version = 2, exportSchema = true)
+@Database(entities = [Note::class, Category::class, NoteCategoryCrossRef::class], version = 3, exportSchema = true)
 abstract class NoteDatabase : RoomDatabase() {
 
     abstract fun getNoteDao(): NoteDao
     abstract fun getCategoryDao(): CategoryDao
+    abstract fun noteCategoryCrossRefDao(): NoteCategoryCrossRefDao
 
     companion object {
         @Volatile

@@ -11,6 +11,7 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.SearchView
 import androidx.core.view.MenuHost
@@ -26,7 +27,9 @@ import com.example.noteapp.databinding.FragmentUncategorizedBinding
 import com.example.noteapp.listeners.OnItemClickListener
 import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
+import com.example.noteapp.models.NoteCategoryCrossRef
 import com.example.noteapp.viewmodel.CategoryViewModel
+import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
 
 class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuProvider,
@@ -38,6 +41,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var categoryViewModel: CategoryViewModel
+    private lateinit var noteCategoryViewModel: NoteCategoryViewModel
     private lateinit var noteAdapter: ListNoteAdapter
     private lateinit var categoryAdapter: ListCategoryAdapter
     private lateinit var uncategorizedView: View
@@ -62,6 +66,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
         noteViewModel = (activity as MainActivity).noteViewModel
         categoryViewModel = (activity as MainActivity).categoryViewModel
+        noteCategoryViewModel = (activity as MainActivity).noteCategoryViewModel
         uncategorizedView = view
 
         setUpNoteRecyclerView()
@@ -81,6 +86,21 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
                         selectedCategories.add(categories[i])
                     }
                 }
+
+                // Tạo danh sách NoteCategoryCrossRef để liên kết note với category
+                val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
+                val selectedNotes = noteAdapter.getSelectedItems()
+
+                for(noteId in selectedNotes.map { it.id }){
+                    for(categoryId in selectedCategories.map { it.id }){
+                        noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
+                    }
+                }
+                // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
+                noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
+                Toast.makeText(requireContext(), "Notes and categories linked successfully", Toast.LENGTH_SHORT).show()
+
+                Log.d("TAG", "showCategorizeDialog: $selectedNotes")
                 Log.d("TAG", "showCategorizeDialog: $selectedCategories")
                 dialog.dismiss()
             }
@@ -118,7 +138,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
         binding.uncategorizedNote.adapter = noteAdapter
 
         activity?.let {
-            noteViewModel.getNotesByCategory(null).observe(viewLifecycleOwner) { note ->
+            noteViewModel.getNotesWithoutCategory().observe(viewLifecycleOwner) { note ->
                 noteAdapter.differ.submitList(note)
                 currentList = noteAdapter.differ.currentList
                 updateUI(note)
