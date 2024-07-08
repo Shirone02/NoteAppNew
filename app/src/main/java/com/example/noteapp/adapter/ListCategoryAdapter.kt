@@ -59,8 +59,22 @@ class ListCategoryAdapter(private val context: Context) :
         }
 
         holder.deleteBtn.setOnClickListener {
-            categoryViewModel.deleteCategory(differ.currentList[position])
+           showDeleteCategoryDialog(context, position)
         }
+    }
+
+    private fun showDeleteCategoryDialog(context: Context, position: Int){
+        val alertDialog = AlertDialog.Builder(context)
+            .setMessage("Delete category '${differ.currentList[position].categoryName}'? Notes from the category won't be deleted.")
+            .setNegativeButton("Cancel"){dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("OK"){dialog, _ ->
+                categoryViewModel.deleteCategory(differ.currentList[position])
+                notifyDataSetChanged()
+                dialog.dismiss()
+            }.create()
+        alertDialog.show()
     }
 
     private fun showEditCategoryDialog(context: Context, position: Int) {

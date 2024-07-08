@@ -90,14 +90,15 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:background="@drawable/bg_edit_note">
 
             <EditText
                 android:id="@+id/edtTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
-                android:hint="Enter your title"
+                android:hint="Enter title..."
                 android:textSize="14sp" />
 
             <EditText
@@ -106,7 +107,7 @@
                 android:layout_height="match_parent"
                 android:layout_margin="8dp"
                 android:gravity="top"
-                android:hint="Enter your content"
+                android:hint="Enter text..."
                 android:textSize="14sp" />
         </LinearLayout>
 

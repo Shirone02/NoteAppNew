@@ -25,6 +25,15 @@ interface NoteDao {
     """)
     fun getNotesWithoutCategory(): LiveData<List<Note>>
 
+    @Query("""
+        SELECT notes.* 
+        FROM notes 
+        LEFT JOIN note_category_cross_ref 
+        ON notes.id = note_category_cross_ref.noteId 
+        WHERE note_category_cross_ref.categoryId = :categoryId
+    """)
+    fun getNotesByCategory(categoryId: Int): LiveData<List<Note>>
+
     @Query("select * from notes order by id desc")
     fun getAllNotes(): LiveData<List<Note>>
 

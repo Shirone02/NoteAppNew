@@ -10,9 +10,21 @@
             android:title="Notes" />
     </group>
 
-    <item android:id="@+id/nav_category_list" android:title="Categories">
+    <item
+        android:id="@+id/nav_sub_item_category"
+        android:title="Categories List">
         <menu>
-            <group android:id="@+id/nav_category_menu" android:checkableBehavior="single">
+
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/nav_category_list"
+        android:title="Categories">
+        <menu>
+            <group
+                android:id="@+id/gr_nav"
+                android:checkableBehavior="single">
                 <item
                     android:id="@+id/nav_uncategorized"
                     android:icon="@drawable/ic_note"
@@ -22,6 +34,7 @@
                     android:id="@+id/nav_edit_categories"
                     android:icon="@drawable/ic_edit_categories"
                     android:title="Edit categories" />
+
             </group>
         </menu>
     </item>

@@ -14,8 +14,12 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.SearchView
+import androidx.appcompat.widget.Toolbar
+import androidx.core.content.ContextCompat
+import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteapp.R
@@ -113,18 +117,28 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
     private fun setUpNoteRecyclerView() {
         noteAdapter = ListNoteAdapter(object : OnItemClickListener {
             override fun onNoteClick(note: Note, isChoose: Boolean) {
-                if (!isChoose) {
+                if (!isChoose && !isAlternateMenuVisible) {
                     val intent = Intent(activity, EditNoteActivity::class.java)
                     intent.putExtra("id", note.id)
                     intent.putExtra("title", note.title)
                     intent.putExtra("content", note.content)
                     startActivity(intent)
                 }
+
+                if(isAlternateMenuVisible){
+                    updateSelectedCount()
+                }
             }
 
             override fun onNoteLongClick(note: Note) {
                 isAlternateMenuVisible = true
                 requireActivity().invalidateOptionsMenu()
+                if(isAlternateMenuVisible){
+                    changeNavigationIcon()
+                    updateSelectedCount()
+                }
+
+
             }
         })
 
@@ -148,6 +162,43 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
                 categories = categoryAdapter.differ.currentList
             }
         }
+    }
+
+    private fun updateSelectedCount(){
+        (activity as MainActivity).let { mainActivity ->
+            val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
+            if(isAlternateMenuVisible){
+                toolbar.setTitle(noteAdapter.getSelectedItemsCount().toString())
+            } else {
+                toolbar.setTitle("Notepad Free")
+            }
+        }
+    }
+
+    private fun changeNavigationIcon(){
+        (activity as MainActivity).let { mainActivity ->
+            val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
+            val drawerLayout = mainActivity.findViewById<DrawerLayout>(R.id.drawerLayout)
+
+            toolbar.setNavigationIcon(R.drawable.ic_back)
+            toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
+            toolbar.setNavigationOnClickListener {
+                activity?.invalidateOptionsMenu()
+                isAlternateMenuVisible = !isAlternateMenuVisible
+                Log.d("TAG", "changeNavigationIcon: $isAlternateMenuVisible")
+                clearSelection()
+                toolbar.setNavigationIcon(R.drawable.ic_option)
+                toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
+                toolbar.setNavigationOnClickListener {
+                    drawerLayout.openDrawer(GravityCompat.START)
+                }
+                toolbar.setTitle("Notepad Free")
+            }
+        }
+    }
+
+    private fun clearSelection() {
+        noteAdapter.clearSelection()
     }
 
     private fun updateUI(note: List<Note>) {
@@ -275,6 +326,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
             R.id.selectAll -> {
                 noteAdapter.selectAllItem()
+                updateSelectedCount()
                 true
             }
 

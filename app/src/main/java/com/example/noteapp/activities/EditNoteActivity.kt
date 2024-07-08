@@ -30,6 +30,7 @@ class EditNoteActivity : AppCompatActivity() {
 
         binding.backBtn.setOnClickListener {
             saveNote()
+            finish()
         }
 
         binding.saveBtn.setOnClickListener { saveNote() }
@@ -60,7 +61,6 @@ class EditNoteActivity : AppCompatActivity() {
         }
 
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
-        finish()
     }
 
     private fun undoNote() {

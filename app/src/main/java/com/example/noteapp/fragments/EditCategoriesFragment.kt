@@ -50,22 +50,9 @@ class EditCategoriesFragment : Fragment() {
     private fun addCategory(){
         val newCategory = Category(0, binding.newCateName.text.toString())
         categoryViewModel.addCategory(newCategory)
-
-
-        // Cập nhật menu item trong Drawer Layout
-        //updateNavigationView(binding.newCateName.text.toString(), R.drawable.ic_note)
+        binding.newCateName.text = null
 
         Toast.makeText(context, "Add successful !!!", Toast.LENGTH_SHORT).show()
-    }
-
-    private fun updateNavigationView(categoryName: String, iconResId: Int) {
-        val navigationView: NavigationView = (requireActivity() as MainActivity).findViewById(R.id.nav_view)
-        val menu = navigationView.menu
-        val group = menu.findItem(R.id.nav_category_menu).subMenu // Tìm menu group
-        // Thêm menu item mới cho category mới
-        val menuItem = group?.add(Menu.NONE, Menu.NONE, Menu.NONE, categoryName)
-        menuItem?.setIcon(iconResId)
-        menuItem?.setOnMenuItemClickListener { true }
     }
 
     private fun setupCategoryRecyclerView() {

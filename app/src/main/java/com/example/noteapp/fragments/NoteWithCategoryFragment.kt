@@ -1,7 +1,7 @@
 package com.example.noteapp.fragments
 
+import android.app.AlertDialog
 import android.content.Intent
-import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -12,10 +12,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
@@ -29,7 +26,7 @@ import com.example.noteapp.activities.EditNoteActivity
 import com.example.noteapp.activities.MainActivity
 import com.example.noteapp.adapter.ListCategoryAdapter
 import com.example.noteapp.adapter.ListNoteAdapter
-import com.example.noteapp.databinding.FragmentNotesBinding
+import com.example.noteapp.databinding.FragmentNoteWithCategoryBinding
 import com.example.noteapp.listeners.OnItemClickListener
 import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
@@ -37,32 +34,29 @@ import com.example.noteapp.models.NoteCategoryCrossRef
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
 
+class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTextListener {
 
-class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTextListener {
-
-    private val binding: FragmentNotesBinding by lazy {
-        FragmentNotesBinding.inflate(layoutInflater)
+    private val binding: FragmentNoteWithCategoryBinding by lazy {
+        FragmentNoteWithCategoryBinding.inflate(layoutInflater)
     }
 
+    private var categoryId: Int = 0
     private lateinit var noteViewModel: NoteViewModel
-    private lateinit var noteCategoryViewModel: NoteCategoryViewModel
     private lateinit var categoryViewModel: CategoryViewModel
+    private lateinit var noteCategoryViewModel: NoteCategoryViewModel
     private lateinit var noteAdapter: ListNoteAdapter
     private lateinit var categoryAdapter: ListCategoryAdapter
-    private lateinit var currentList: List<Note>
-    private lateinit var noteView: View
-    private var isAlternateMenuVisible: Boolean = false
+    private lateinit var uncategorizedView: View
     private lateinit var categories: List<Category>
+    private lateinit var currentList: List<Note>
+    private var isAlternateMenuVisible: Boolean = false
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
+
         return binding.root
     }
 
@@ -76,38 +70,59 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         noteViewModel = (activity as MainActivity).noteViewModel
         categoryViewModel = (activity as MainActivity).categoryViewModel
         noteCategoryViewModel = (activity as MainActivity).noteCategoryViewModel
-        noteView = view
+        uncategorizedView = view
 
-        setupNoteRecyclerView()
+        categoryId = arguments?.getInt("categoryId")?:0
 
-        binding.addNoteFab.setOnClickListener { addNote() }
+        setUpNoteRecyclerView()
 
     }
 
-    private fun addNote() {
-        val note = Note(0, "", "", getCurrentTime(), null)
-        noteViewModel.addNote(note)
+    //hien thi hop thoai chon cac the loai
+    private fun showCategorizeDialog() {
+        val checkedItem = BooleanArray(categories.size)
 
-        val intent = Intent(context, EditNoteActivity::class.java)
-        intent.putExtra("id", note.id)
-        intent.putExtra("title", note.title)
-        intent.putExtra("content", note.content)
-        intent.putExtra("categoryId", note.categoryId)
-        startActivity(intent)
+        val builder: AlertDialog.Builder = AlertDialog.Builder(context)
+        builder.setTitle("Select category")
+            .setPositiveButton("OK") { dialog, which ->
+                val selectedCategories = mutableListOf<Category>()
+                for(i in categories.indices){
+                    if(checkedItem[i]){
+                        selectedCategories.add(categories[i])
+                    }
+                }
 
-        Toast.makeText(context, "Add successful !!!", Toast.LENGTH_SHORT).show()
+                // Tạo danh sách NoteCategoryCrossRef để liên kết note với category
+                val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
+                val selectedNotes = noteAdapter.getSelectedItems()
+
+                for(noteId in selectedNotes.map { it.id }){
+                    for(categoryId in selectedCategories.map { it.id }){
+                        noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
+                    }
+                }
+                // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
+                noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
+                Toast.makeText(requireContext(), "Notes and categories linked successfully", Toast.LENGTH_SHORT).show()
+                dialog.dismiss()
+            }
+            .setNegativeButton("Cancel") { dialog, which ->
+                dialog.dismiss()
+            }
+            .setMultiChoiceItems(categories.map { it.categoryName }.toTypedArray(), checkedItem){ dialog, which, isChecked ->
+                checkedItem[which] = isChecked
+            }
+        builder.create().show()
     }
 
-    //set up recycler View
-    private fun setupNoteRecyclerView() {
+    private fun setUpNoteRecyclerView() {
         noteAdapter = ListNoteAdapter(object : OnItemClickListener {
             override fun onNoteClick(note: Note, isChoose: Boolean) {
                 if (!isChoose && !isAlternateMenuVisible) {
-                    val intent = Intent(context, EditNoteActivity::class.java)
+                    val intent = Intent(activity, EditNoteActivity::class.java)
                     intent.putExtra("id", note.id)
                     intent.putExtra("title", note.title)
                     intent.putExtra("content", note.content)
-                    intent.putExtra("categoryId", note.categoryId)
                     startActivity(intent)
                 }
 
@@ -119,7 +134,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             override fun onNoteLongClick(note: Note) {
                 isAlternateMenuVisible = true
                 requireActivity().invalidateOptionsMenu()
-                if(isAlternateMenuVisible){
+                if(isAlternateMenuVisible) {
                     changeNavigationIcon()
                     updateSelectedCount()
                 }
@@ -128,12 +143,12 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
         categoryAdapter = ListCategoryAdapter(requireContext())
 
-        binding.listNoteRecyclerView.layoutManager =
+        binding.noteWithCategoryRcv.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
-        binding.listNoteRecyclerView.adapter = noteAdapter
+        binding.noteWithCategoryRcv.adapter = noteAdapter
 
         activity?.let {
-            noteViewModel.getAllNote().observe(viewLifecycleOwner) { note ->
+            noteViewModel.getNotesByCategory(categoryId).observe(viewLifecycleOwner) { note ->
                 noteAdapter.differ.submitList(note)
                 currentList = noteAdapter.differ.currentList
                 updateUI(note)
@@ -181,66 +196,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         }
     }
 
+    private fun clearSelection() {
+        noteAdapter.clearSelection()
+    }
+
     private fun updateUI(note: List<Note>) {
         if (note.isNotEmpty()) {
-            binding.listNoteRecyclerView.visibility = View.VISIBLE
+            binding.noteWithCategoryRcv.visibility = View.VISIBLE
         } else {
-            binding.listNoteRecyclerView.visibility = View.GONE
+            binding.noteWithCategoryRcv.visibility = View.GONE
         }
     }
 
-    private fun getCurrentTime(): String {
-        val calendar = Calendar.getInstance()
-
-        val formattedDate = SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.getDefault()).format(calendar.time)
-
-        return formattedDate
-    }
-
-    //them note vao cac the loai
-    private fun showCategorizeDialog() {
-        val checkedItem = BooleanArray(categories.size)
-
-        val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
-        builder.setTitle("Select category")
-            .setPositiveButton("OK") { dialog, which ->
-                val selectedCategories = mutableListOf<Category>()
-                val unSelectedCategories = mutableListOf<Category>()
-                for(i in categories.indices){
-                    if(checkedItem[i]){
-                        selectedCategories.add(categories[i])
-                    } else {
-                        unSelectedCategories.add(categories[i])
-                    }
-                }
-
-                // Tạo danh sách NoteCategoryCrossRef để liên kết note với category
-                val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
-                val selectedNotes = noteAdapter.getSelectedItems()
-
-                for(noteId in selectedNotes.map { it.id }){
-                    noteCategoryViewModel.deleteNoteCategoryCrossRefs(noteId)
-                    for(categoryId in selectedCategories.map { it.id }){
-                        noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
-                    }
-                }
-
-                // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
-                noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
-                Toast.makeText(requireContext(), "Notes and categories linked successfully", Toast.LENGTH_SHORT).show()
-                dialog.dismiss()
-            }
-            .setNegativeButton("Cancel") { dialog, which ->
-                dialog.dismiss()
-            }
-            .setMultiChoiceItems(categories.map { it.categoryName }.toTypedArray(), checkedItem){ dialog, which, isChecked ->
-                checkedItem[which] = isChecked
-            }
-        builder.create().show()
-    }
-
     private fun showDeleteDialog() {
-        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        val builder: androidx.appcompat.app.AlertDialog.Builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
 
         builder.setTitle("Delete")
             .setMessage("Do you want to delete?")
@@ -261,10 +230,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         noteAdapter.removeSelectedItems()
     }
 
-    private fun clearSelection() {
-        noteAdapter.clearSelection()
-    }
-
     private fun showOptionDialog() {
         val sortOption = arrayOf(
             "edit date: from newest",
@@ -277,7 +242,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
         var selectedOption = 0
         val noteList = noteAdapter.differ.currentList
-        val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
+        val builder: androidx.appcompat.app.AlertDialog.Builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
         builder.setTitle("Sort by")
             .setPositiveButton("Sort") { dialog, which ->
                 when (selectedOption) {
@@ -392,5 +357,5 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         }
         return true
     }
-}
 
+}

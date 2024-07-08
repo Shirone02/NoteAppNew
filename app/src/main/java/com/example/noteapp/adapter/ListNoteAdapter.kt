@@ -38,7 +38,6 @@ class ListNoteAdapter(
     inner class viewholder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         var time: TextView = itemView.findViewById(R.id.tvTime)
         var title: TextView = itemView.findViewById(R.id.tvTitle)
-        var content: TextView = itemView.findViewById(R.id.tvContent)
         var category: TextView = itemView.findViewById(R.id.tvCategory)
     }
 
@@ -54,43 +53,51 @@ class ListNoteAdapter(
 
     @SuppressLint("SetTextI18n")
     override fun onBindViewHolder(holder: ListNoteAdapter.viewholder, position: Int) {
-        holder.title.text = differ.currentList[position].title
-
-        if (differ.currentList[position].content.isEmpty()) {
-            holder.content.visibility = View.GONE
+        if (differ.currentList[position].title == "") {
+            holder.title.text = "Untitled"
         } else {
-            holder.content.text = differ.currentList[position].content
+            holder.title.text = differ.currentList[position].title
         }
 
         holder.time.text = "Last edit: " + differ.currentList[position].time
 
         val categoryList = categoryViewModel.getCategoryNameById(differ.currentList[position].id)
-        if(categoryList.size > 2){
-            holder.category.text = "Category: ${categoryList[0]},${categoryList[1]}, (+${categoryList.size-2})"
+        if (categoryList.size > 2) {
+            holder.category.text =
+                "${categoryList[0]}, ${categoryList[1]}, (+${categoryList.size - 2})"
         } else {
-            holder.category.text = "Category: $categoryList"
+            if (categoryList.isNotEmpty()) {
+                holder.category.text = "$categoryList"
+            } else {
+                holder.category.text = null
+            }
+
         }
 
         holder.itemView.isSelected = selectedItems.contains(differ.currentList[position])
 
         holder.itemView.setOnClickListener {
-            onItemClickListener.onNoteClick(
-                differ.currentList[position],
-                holder.itemView.isSelected
-            )
-
             if (holder.itemView.isSelected) {
                 if (selectedItems.contains(differ.currentList[position])) {
                     selectedItems.remove(differ.currentList[position])
                     holder.itemView.isSelected = false
                 }
                 notifyItemChanged(position)  // Cập nhật lại item
+            } else {
+                selectedItems.add(differ.currentList[position])
+                holder.itemView.isSelected = true
+                notifyDataSetChanged()
             }
+
+            onItemClickListener.onNoteClick(
+                differ.currentList[position],
+                holder.itemView.isSelected
+            )
         }
 
         holder.itemView.setOnLongClickListener {
-            onItemClickListener.onNoteLongClick(differ.currentList[position])
             toggleSelection(differ.currentList[position])
+            onItemClickListener.onNoteLongClick(differ.currentList[position])
             notifyItemChanged(position)
             true
 
@@ -109,7 +116,7 @@ class ListNoteAdapter(
         selectedItems.clear()
     }
 
-    fun getSelectedItemsCount(): Int{
+    fun getSelectedItemsCount(): Int {
         return selectedItems.size
     }
 

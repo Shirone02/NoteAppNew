@@ -18,6 +18,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
+import androidx.core.view.children
 import androidx.lifecycle.ViewModelProvider
 import com.example.noteapp.R
 import com.example.noteapp.adapter.ListNoteAdapter
@@ -26,6 +27,7 @@ import com.example.noteapp.databinding.ActivityMainBinding
 import com.example.noteapp.fragments.BackupFragment
 import com.example.noteapp.fragments.EditCategoriesFragment
 import com.example.noteapp.fragments.HelpFragment
+import com.example.noteapp.fragments.NoteWithCategoryFragment
 import com.example.noteapp.fragments.NotesFragment
 import com.example.noteapp.fragments.PrivacyPolicyFragment
 import com.example.noteapp.fragments.RateFragment
@@ -33,6 +35,7 @@ import com.example.noteapp.fragments.SettingFragment
 import com.example.noteapp.fragments.TrashFragment
 import com.example.noteapp.fragments.UncategorizedFragment
 import com.example.noteapp.listeners.OnItemClickListener
+import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
 import com.example.noteapp.repository.CategoryRepository
 import com.example.noteapp.repository.NoteCategoryRepository
@@ -65,6 +68,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         setUpViewModel()
 
+        updateCategoryList()
+
         setSupportActionBar(binding.topAppBar)
 
         val toggle = ActionBarDrawerToggle(
@@ -86,22 +91,37 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         }
     }
 
-    fun showDeleteIcon() {
-        binding.topAppBar.menu.clear()
-        binding.topAppBar.inflateMenu(R.menu.menu_selection)
-        binding.topAppBar.setNavigationIcon(R.drawable.ic_back)
-        binding.topAppBar.navigationIcon?.setTint(ContextCompat.getColor(this, R.color.white))
-        binding.topAppBar.setNavigationOnClickListener {
-            binding.topAppBar.menu.clear()
-            binding.topAppBar.inflateMenu(R.menu.top_app_bar)
-            binding.topAppBar.setNavigationIcon(R.drawable.ic_option)
-            binding.topAppBar.navigationIcon?.setTint(ContextCompat.getColor(this, R.color.white))
-            binding.topAppBar.setNavigationOnClickListener {
-                binding.drawerLayout.openDrawer(GravityCompat.START)
-            }
-            binding.topAppBar.setTitle("Notepad Free")
+    private fun updateCategoryList() {
+        categoryViewModel.getAllCategory().observe(this){ categories ->
+            addCategoriesToDrawer(categories)
         }
     }
+
+    private fun addCategoriesToDrawer(categories: List<Category>) {
+        val menuCategory = binding.navView.menu.findItem(R.id.nav_sub_item_category)?.subMenu?:return
+
+        // Xóa các mục cũ trước khi thêm mới
+        menuCategory.clear()
+
+        for(category in categories){
+            val menuItem = menuCategory.add(Menu.NONE, category.id, Menu.NONE, category.categoryName)
+            menuItem.setIcon(R.drawable.ic_categorized)
+        }
+    }
+
+//    fun setNavigationIcon() {
+//        binding.topAppBar.setNavigationIcon(R.drawable.ic_back)
+//        binding.topAppBar.navigationIcon?.setTint(ContextCompat.getColor(this, R.color.white))
+//
+//        binding.topAppBar.setNavigationOnClickListener {
+//            binding.topAppBar.setNavigationIcon(R.drawable.ic_option)
+//            binding.topAppBar.navigationIcon?.setTint(ContextCompat.getColor(this, R.color.white))
+//            binding.topAppBar.setNavigationOnClickListener {
+//                binding.drawerLayout.openDrawer(GravityCompat.START)
+//            }
+//            binding.topAppBar.setTitle("Notepad Free")
+//        }
+//    }
 
 
     private fun setUpViewModel() {
@@ -122,6 +142,19 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {
+        // Xử lý sự kiện khi một mục trong Navigation Drawer được chọn
+        val categoryId = item.itemId
+        // Tạo Fragment và truyền categoryId bằng arguments
+        val fragment = NoteWithCategoryFragment().apply {
+            arguments = Bundle().apply {
+                putInt("categoryId", categoryId)
+            }
+        }
+        // Thay thế nội dung bằng fragment mới
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.fragment_container, fragment)
+            .commit()
+
         when (item.itemId) {
             R.id.nav_note -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, NotesFragment()).commit()
