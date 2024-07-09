@@ -3,82 +3,65 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:showIn="navigation_view">
 
-    <group android:checkableBehavior="single">
-        <item
-            android:id="@+id/nav_note"
-            android:icon="@drawable/ic_note"
-            android:title="Notes" />
-    </group>
+    <item
+        android:id="@+id/nav_note"
+        android:icon="@drawable/ic_note"
+        android:title="Notes" />
+
 
     <item
-        android:id="@+id/nav_sub_item_category"
-        android:title="Categories List">
-        <menu>
-
-        </menu>
-    </item>
-
-    <item
-        android:id="@+id/nav_category_list"
+        android:id="@+id/nav_categories"
         android:title="Categories">
         <menu>
-            <group
-                android:id="@+id/gr_nav"
-                android:checkableBehavior="single">
-                <item
-                    android:id="@+id/nav_uncategorized"
-                    android:icon="@drawable/ic_note"
-                    android:title="Uncategorized" />
 
-                <item
-                    android:id="@+id/nav_edit_categories"
-                    android:icon="@drawable/ic_edit_categories"
-                    android:title="Edit categories" />
-
-            </group>
         </menu>
     </item>
 
+    <item
+        android:id="@+id/nav_uncategorized"
+        android:icon="@drawable/ic_note"
+        android:title="Uncategorized" />
+
+    <item
+        android:id="@+id/nav_edit_categories"
+        android:icon="@drawable/ic_edit_categories"
+        android:title="Edit categories" />
 
     <item android:title="">
         <menu>
-            <group android:checkableBehavior="single">
-                <item
-                    android:id="@+id/nav_backup"
-                    android:icon="@drawable/ic_backup"
-                    android:title="Backup" />
+            <item
+                android:id="@+id/nav_backup"
+                android:icon="@drawable/ic_backup"
+                android:title="Backup" />
 
-                <item
-                    android:id="@+id/nav_trash"
-                    android:icon="@drawable/ic_trash"
-                    android:title="Trash" />
-            </group>
+            <item
+                android:id="@+id/nav_trash"
+                android:icon="@drawable/ic_trash"
+                android:title="Trash" />
         </menu>
     </item>
 
     <item android:title="">
         <menu>
-            <group android:checkableBehavior="single">
-                <item
-                    android:id="@+id/nav_setting"
-                    android:icon="@drawable/ic_setting"
-                    android:title="Settings" />
+            <item
+                android:id="@+id/nav_setting"
+                android:icon="@drawable/ic_setting"
+                android:title="Settings" />
 
-                <item
-                    android:id="@+id/nav_rate"
-                    android:icon="@drawable/ic_rate"
-                    android:title="Rate the app" />
+            <item
+                android:id="@+id/nav_rate"
+                android:icon="@drawable/ic_rate"
+                android:title="Rate the app" />
 
-                <item
-                    android:id="@+id/nav_help"
-                    android:icon="@drawable/ic_help"
-                    android:title="Help" />
+            <item
+                android:id="@+id/nav_help"
+                android:icon="@drawable/ic_help"
+                android:title="Help" />
 
-                <item
-                    android:id="@+id/nav_policy"
-                    android:icon="@drawable/ic_privacy_policy"
-                    android:title="Privacy policy" />
-            </group>
+            <item
+                android:id="@+id/nav_policy"
+                android:icon="@drawable/ic_privacy_policy"
+                android:title="Privacy policy" />
         </menu>
     </item>
 

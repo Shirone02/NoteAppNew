@@ -17,7 +17,7 @@
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/select_all_notes"
+        android:id="@+id/selectAll"
         android:icon="@drawable/ic_option1"
         android:title="Select all notes"
         app:showAsAction="never" />

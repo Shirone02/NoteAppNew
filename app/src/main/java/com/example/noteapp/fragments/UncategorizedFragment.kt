@@ -35,6 +35,9 @@ import com.example.noteapp.models.NoteCategoryCrossRef
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuProvider,
     SearchView.OnQueryTextListener {
@@ -75,6 +78,36 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
         setUpNoteRecyclerView()
 
+        (activity as MainActivity).let { mainActivity ->
+            val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
+            toolbar.setTitle("Notepad Free")
+        }
+
+        binding.addNoteFab.setOnClickListener { addNote() }
+    }
+
+    //thêm note
+    private fun addNote() {
+        val note = Note(0, "", "", getCurrentTime(), null)
+        noteViewModel.addNote(note)
+
+        val intent = Intent(context, EditNoteActivity::class.java)
+        intent.putExtra("id", note.id)
+        intent.putExtra("title", note.title)
+        intent.putExtra("content", note.content)
+        intent.putExtra("categoryId", note.categoryId)
+        startActivity(intent)
+
+        Toast.makeText(context, "Add successful !!!", Toast.LENGTH_SHORT).show()
+    }
+
+    //lay time hien tai
+    private fun getCurrentTime(): String {
+        val calendar = Calendar.getInstance()
+
+        val formattedDate = SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.getDefault()).format(calendar.time)
+
+        return formattedDate
     }
 
     //hien thi hop thoai chon cac the loai
@@ -326,6 +359,9 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
             R.id.selectAll -> {
                 noteAdapter.selectAllItem()
+                isAlternateMenuVisible = true
+                changeNavigationIcon()
+                requireActivity().invalidateOptionsMenu()
                 updateSelectedCount()
                 true
             }

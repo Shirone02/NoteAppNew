@@ -60,7 +60,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
     lateinit var noteViewModel: NoteViewModel
     lateinit var categoryViewModel: CategoryViewModel
-    lateinit var noteCategoryViewModel : NoteCategoryViewModel
+    lateinit var noteCategoryViewModel: NoteCategoryViewModel
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,37 +92,26 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun updateCategoryList() {
-        categoryViewModel.getAllCategory().observe(this){ categories ->
+        categoryViewModel.getAllCategory().observe(this) { categories ->
             addCategoriesToDrawer(categories)
         }
     }
 
     private fun addCategoriesToDrawer(categories: List<Category>) {
-        val menuCategory = binding.navView.menu.findItem(R.id.nav_sub_item_category)?.subMenu?:return
+        val menuCategory = binding.navView.menu.findItem(R.id.nav_categories)?.subMenu ?: return
 
         // Xóa các mục cũ trước khi thêm mới
         menuCategory.clear()
-
-        for(category in categories){
-            val menuItem = menuCategory.add(Menu.NONE, category.id, Menu.NONE, category.categoryName)
-            menuItem.setIcon(R.drawable.ic_categorized)
+        if (categories.isEmpty()) {
+            menuCategory.add(Menu.NONE, Menu.NONE, Menu.NONE, "").setVisible(true)
+        } else {
+            for (category in categories) {
+                val menuItem =
+                    menuCategory.add(Menu.NONE, category.id, Menu.NONE, category.categoryName)
+                menuItem.setIcon(R.drawable.ic_categorized)
+            }
         }
     }
-
-//    fun setNavigationIcon() {
-//        binding.topAppBar.setNavigationIcon(R.drawable.ic_back)
-//        binding.topAppBar.navigationIcon?.setTint(ContextCompat.getColor(this, R.color.white))
-//
-//        binding.topAppBar.setNavigationOnClickListener {
-//            binding.topAppBar.setNavigationIcon(R.drawable.ic_option)
-//            binding.topAppBar.navigationIcon?.setTint(ContextCompat.getColor(this, R.color.white))
-//            binding.topAppBar.setNavigationOnClickListener {
-//                binding.drawerLayout.openDrawer(GravityCompat.START)
-//            }
-//            binding.topAppBar.setTitle("Notepad Free")
-//        }
-//    }
-
 
     private fun setUpViewModel() {
         val noteRepository = NoteRepository(NoteDatabase(this))
@@ -132,13 +121,15 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         val categoryViewModelProviderFactory =
             CategoryViewModelFactory(application, categoryRepository)
         val viewModelProviderFactory = NoteViewModelFactory(application, noteRepository)
-        val noteCategoryViewModelFactory = NoteCategoryViewModelFactory(application, noteCategoryRepository)
+        val noteCategoryViewModelFactory =
+            NoteCategoryViewModelFactory(application, noteCategoryRepository)
 
         categoryViewModel =
             ViewModelProvider(this, categoryViewModelProviderFactory)[CategoryViewModel::class.java]
 
         noteViewModel = ViewModelProvider(this, viewModelProviderFactory)[NoteViewModel::class.java]
-        noteCategoryViewModel = ViewModelProvider(this, noteCategoryViewModelFactory)[NoteCategoryViewModel::class.java]
+        noteCategoryViewModel =
+            ViewModelProvider(this, noteCategoryViewModelFactory)[NoteCategoryViewModel::class.java]
     }
 
     override fun onNavigationItemSelected(item: MenuItem): Boolean {

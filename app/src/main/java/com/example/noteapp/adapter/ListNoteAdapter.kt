@@ -80,12 +80,11 @@ class ListNoteAdapter(
             if (holder.itemView.isSelected) {
                 if (selectedItems.contains(differ.currentList[position])) {
                     selectedItems.remove(differ.currentList[position])
-                    holder.itemView.isSelected = false
+                    //holder.itemView.isSelected = false
                 }
                 notifyItemChanged(position)  // Cập nhật lại item
             } else {
                 selectedItems.add(differ.currentList[position])
-                holder.itemView.isSelected = true
                 notifyDataSetChanged()
             }
 
@@ -100,7 +99,6 @@ class ListNoteAdapter(
             onItemClickListener.onNoteLongClick(differ.currentList[position])
             notifyItemChanged(position)
             true
-
         }
     }
 
