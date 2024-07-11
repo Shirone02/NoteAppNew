@@ -5,7 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".fragments.EditCategoriesFragment"
-    android:background="@color/lightYellow">
+    android:background="@color/lightYellow"
+    android:id="@+id/fragment_edit_categories">
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"

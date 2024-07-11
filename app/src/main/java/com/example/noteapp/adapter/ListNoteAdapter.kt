@@ -42,6 +42,8 @@ class ListNoteAdapter(
     }
 
     private val selectedItems = mutableSetOf<Note>()
+    private var currentNote: Note? = null
+    var isChoosing = false
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListNoteAdapter.viewholder {
         categoryViewModel = (parent.context as MainActivity).categoryViewModel
@@ -67,7 +69,7 @@ class ListNoteAdapter(
                 "${categoryList[0]}, ${categoryList[1]}, (+${categoryList.size - 2})"
         } else {
             if (categoryList.isNotEmpty()) {
-                holder.category.text = "$categoryList"
+                holder.category.text = categoryList.toString().substring(1, categoryList.toString().length -1)
             } else {
                 holder.category.text = null
             }
@@ -80,12 +82,14 @@ class ListNoteAdapter(
             if (holder.itemView.isSelected) {
                 if (selectedItems.contains(differ.currentList[position])) {
                     selectedItems.remove(differ.currentList[position])
-                    //holder.itemView.isSelected = false
+
                 }
                 notifyItemChanged(position)  // Cập nhật lại item
             } else {
-                selectedItems.add(differ.currentList[position])
-                notifyDataSetChanged()
+                if (isChoosing) {
+                    selectedItems.add(differ.currentList[position])
+                    notifyDataSetChanged()
+                }
             }
 
             onItemClickListener.onNoteClick(
@@ -95,9 +99,11 @@ class ListNoteAdapter(
         }
 
         holder.itemView.setOnLongClickListener {
+            isChoosing = true
             toggleSelection(differ.currentList[position])
             onItemClickListener.onNoteLongClick(differ.currentList[position])
             notifyItemChanged(position)
+            currentNote = differ.currentList[position]
             true
         }
     }
@@ -113,6 +119,7 @@ class ListNoteAdapter(
         differ.submitList(newList)
         selectedItems.clear()
     }
+
 
     fun getSelectedItemsCount(): Int {
         return selectedItems.size

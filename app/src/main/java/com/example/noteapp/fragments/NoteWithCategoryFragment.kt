@@ -104,6 +104,13 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
                 // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
                 noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
                 Toast.makeText(requireContext(), "Notes and categories linked successfully", Toast.LENGTH_SHORT).show()
+
+                //thay doi lai menu
+                isAlternateMenuVisible = !isAlternateMenuVisible
+                changeDrawerNavigationIcon()
+                requireActivity().invalidateOptionsMenu()
+                updateSelectedCount()
+
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel") { dialog, which ->
@@ -135,7 +142,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
                 isAlternateMenuVisible = true
                 requireActivity().invalidateOptionsMenu()
                 if(isAlternateMenuVisible) {
-                    changeNavigationIcon()
+                    changeBackNavigationIcon()
                     updateSelectedCount()
                 }
             }
@@ -174,7 +181,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
         }
     }
 
-    private fun changeNavigationIcon(){
+    private fun changeBackNavigationIcon() {
         (activity as MainActivity).let { mainActivity ->
             val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
             val drawerLayout = mainActivity.findViewById<DrawerLayout>(R.id.drawerLayout)
@@ -182,17 +189,40 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
             toolbar.setNavigationIcon(R.drawable.ic_back)
             toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
             toolbar.setNavigationOnClickListener {
+                noteAdapter.isChoosing = false
                 activity?.invalidateOptionsMenu()
                 isAlternateMenuVisible = !isAlternateMenuVisible
-                Log.d("TAG", "changeNavigationIcon: $isAlternateMenuVisible")
                 clearSelection()
                 toolbar.setNavigationIcon(R.drawable.ic_option)
-                toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
+                toolbar.navigationIcon?.setTint(
+                    ContextCompat.getColor(
+                        requireContext(),
+                        R.color.white
+                    )
+                )
                 toolbar.setNavigationOnClickListener {
                     drawerLayout.openDrawer(GravityCompat.START)
                 }
                 toolbar.setTitle("Notepad Free")
             }
+        }
+    }
+
+    //thay doi drawer navigation icon
+    private fun changeDrawerNavigationIcon() {
+        (activity as MainActivity).let { mainActivity ->
+            val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
+            val drawerLayout = mainActivity.findViewById<DrawerLayout>(R.id.drawerLayout)
+
+            isAlternateMenuVisible = false
+            activity?.invalidateOptionsMenu()
+            clearSelection()
+            toolbar.setNavigationIcon(R.drawable.ic_option)
+            toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
+            toolbar.setNavigationOnClickListener {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
+            toolbar.setTitle("Notepad Free")
         }
     }
 

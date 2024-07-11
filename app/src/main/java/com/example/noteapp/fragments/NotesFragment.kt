@@ -1,13 +1,14 @@
 package com.example.noteapp.fragments
 
+import android.Manifest
 import android.app.Activity
-import android.content.Context
 import android.content.Intent
-import android.graphics.drawable.Drawable
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
+import android.provider.OpenableColumns
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -16,19 +17,18 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.widget.PopupMenu
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.SearchView.OnQueryTextListener
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContentProviderCompat
-import androidx.core.content.ContentProviderCompat.requireContext
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.room.util.findColumnIndexBySuffix
 import com.example.noteapp.R
 import com.example.noteapp.activities.EditNoteActivity
 import com.example.noteapp.activities.MainActivity
@@ -43,8 +43,6 @@ import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
 import java.io.BufferedReader
-import java.io.File
-import java.io.FileOutputStream
 import java.io.IOException
 import java.io.InputStreamReader
 import java.text.SimpleDateFormat
@@ -67,12 +65,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     private lateinit var noteView: View
     private var isAlternateMenuVisible: Boolean = false
     private lateinit var categories: List<Category>
-    private var selectedNotes = mutableListOf<Note>()
 
     companion object {
-        private const val CREATE_FILE_REQUEST_CODE = 100
         private const val READ_FILE_REQUEST_CODE = 101
-        private const val PERMISSION_REQUEST_CODE = 102
+        private const val REQUEST_WRITE_PERMISSION = 1001
+        private const val REQUEST_CODE_PICK_DIRECTORY = 1002
     }
 
     override fun onCreateView(
@@ -109,14 +106,14 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         val note = Note(0, "", "", getCurrentTime(), null)
         noteViewModel.addNote(note)
 
-        val intent = Intent(context, EditNoteActivity::class.java)
+        val intent = Intent(requireContext(), EditNoteActivity::class.java)
         intent.putExtra("id", note.id)
         intent.putExtra("title", note.title)
         intent.putExtra("content", note.content)
         intent.putExtra("categoryId", note.categoryId)
         startActivity(intent)
 
-        Toast.makeText(context, "Add successful !!!", Toast.LENGTH_SHORT).show()
+        Toast.makeText(requireContext(), "Add successful !!!", Toast.LENGTH_SHORT).show()
     }
 
     //set up recycler View
@@ -129,6 +126,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                     intent.putExtra("title", note.title)
                     intent.putExtra("content", note.content)
                     intent.putExtra("categoryId", note.categoryId)
+                    intent.putExtra("time", note.time)
                     startActivity(intent)
                 }
 
@@ -141,7 +139,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                 isAlternateMenuVisible = true
                 requireActivity().invalidateOptionsMenu()
                 if (isAlternateMenuVisible) {
-                    changeNavigationIcon()
+                    changeBackNavigationIcon()
                     updateSelectedCount()
                 }
             }
@@ -177,12 +175,13 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                 toolbar.setTitle(noteAdapter.getSelectedItemsCount().toString())
             } else {
                 toolbar.setTitle("Notepad Free")
+                noteAdapter.clearSelection()
             }
         }
     }
 
-    // thay doi navigation icon
-    private fun changeNavigationIcon() {
+    // thay doi back navigation icon
+    private fun changeBackNavigationIcon() {
         (activity as MainActivity).let { mainActivity ->
             val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
             val drawerLayout = mainActivity.findViewById<DrawerLayout>(R.id.drawerLayout)
@@ -190,9 +189,9 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             toolbar.setNavigationIcon(R.drawable.ic_back)
             toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
             toolbar.setNavigationOnClickListener {
+                noteAdapter.isChoosing = false
                 activity?.invalidateOptionsMenu()
                 isAlternateMenuVisible = !isAlternateMenuVisible
-                Log.d("TAG", "changeNavigationIcon: $isAlternateMenuVisible")
                 clearSelection()
                 toolbar.setNavigationIcon(R.drawable.ic_option)
                 toolbar.navigationIcon?.setTint(
@@ -206,6 +205,25 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                 }
                 toolbar.setTitle("Notepad Free")
             }
+        }
+    }
+
+    //thay doi drawer navigation icon
+    private fun changeDrawerNavigationIcon() {
+        (activity as MainActivity).let { mainActivity ->
+            val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
+            val drawerLayout = mainActivity.findViewById<DrawerLayout>(R.id.drawerLayout)
+
+            noteAdapter.isChoosing = false
+            isAlternateMenuVisible = false
+            activity?.invalidateOptionsMenu()
+            clearSelection()
+            toolbar.setNavigationIcon(R.drawable.ic_option)
+            toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
+            toolbar.setNavigationOnClickListener {
+                drawerLayout.openDrawer(GravityCompat.START)
+            }
+            toolbar.setTitle("Notepad Free")
         }
     }
 
@@ -257,16 +275,26 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
                 // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
                 noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
+
                 Toast.makeText(
                     requireContext(),
                     "Notes and categories linked successfully",
                     Toast.LENGTH_SHORT
                 ).show()
+
+                //thay doi lai menu
+                isAlternateMenuVisible = !isAlternateMenuVisible
+                changeDrawerNavigationIcon()
+                requireActivity().invalidateOptionsMenu()
+                updateSelectedCount()
+
                 dialog.dismiss()
             }
+
             .setNegativeButton("Cancel") { dialog, which ->
                 dialog.dismiss()
             }
+
             .setMultiChoiceItems(
                 categories.map { it.categoryName }.toTypedArray(),
                 checkedItem
@@ -281,9 +309,16 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
 
         builder.setTitle("Delete")
-            .setMessage("Do you want to delete?")
+            .setMessage("Delete the selected notes?")
             .setPositiveButton("Delete") { dialog, which ->
                 deleteSelectedItem()
+
+                //thay doi lai menu
+                isAlternateMenuVisible = false
+                changeDrawerNavigationIcon()
+                requireActivity().invalidateOptionsMenu()
+                updateSelectedCount()
+
                 dialog.dismiss()
             }
             .setNegativeButton("Cancel") { dialog, which ->
@@ -300,6 +335,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         noteAdapter.removeSelectedItems()
 
         isAlternateMenuVisible = !isAlternateMenuVisible
+        changeBackNavigationIcon()
         requireActivity().invalidateOptionsMenu()
         updateSelectedCount()
     }
@@ -381,46 +417,143 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         }
     }
 
-    //Export note ra file txt
-    private fun exportNoteToTextFile() {
-        selectedNotes = noteAdapter.getSelectedItems().toMutableList()
-
-        val intent = Intent(Intent.ACTION_CREATE_DOCUMENT).apply {
-            addCategory(Intent.CATEGORY_OPENABLE)
-            type = "text/plain"
+    //cap quyen truy cap
+    private fun requestWritePermission() {
+        if (ContextCompat.checkSelfPermission(
+                requireContext(),
+                Manifest.permission.WRITE_EXTERNAL_STORAGE
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            requestPermissions(
+                arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE),
+                REQUEST_WRITE_PERMISSION
+            )
+        } else {
+            selectDirectory()
         }
-        startActivityForResult(intent, CREATE_FILE_REQUEST_CODE)
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_WRITE_PERMISSION) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                selectDirectory()
+            } else {
+                Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
+    //chon thu muc
+    private fun selectDirectory() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        startActivityForResult(intent, REQUEST_CODE_PICK_DIRECTORY)
+    }
+
+    //Export note ra file txt
+    private fun exportNoteToTextFile(uri: Uri) {
+        val selectedNotes = noteAdapter.getSelectedItems()
+        selectedNotes.forEach { note ->
+            val fileName = "${note.title}.txt"
+            createFile(uri, fileName, note.content)
+        }
+        Toast.makeText(requireContext(), "${selectedNotes.size} note(s) exported", Toast.LENGTH_SHORT)
+            .show()
+    }
+
+    private fun createFile(uri: Uri, fileName: String, content: String) {
+        try {
+            val documentUri = DocumentsContract.buildDocumentUriUsingTree(
+                uri,
+                DocumentsContract.getTreeDocumentId(uri)
+            )
+            val docUri = DocumentsContract.createDocument(
+                requireContext().contentResolver,
+                documentUri,
+                "text/plain",
+                fileName
+            )
+            docUri?.let {
+                requireContext().contentResolver.openOutputStream(it)?.use { outputStream ->
+                    outputStream.write(content.toByteArray())
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
-        if (requestCode == CREATE_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
-            data?.data?.also { uri ->
-                for ((index, note) in selectedNotes.withIndex()) {
-                    val fileName = "${note.title}.txt"
-                    saveNoteToFile(note, uri, fileName)
-                }
-
+        if (requestCode == REQUEST_CODE_PICK_DIRECTORY && resultCode == Activity.RESULT_OK) {
+            val uri = data?.data
+            // Lưu Uri bằng cách sử dụng quyền có thể duy trì
+            uri?.let {
+                exportNoteToTextFile(it)
             }
         }
 
-        if(requestCode == READ_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK){
-            data?.data?.let { uri ->
-                val note = createNoteFromTextFile(uri)
-                note.let {
-                    noteViewModel.addNote(note)
+        if (requestCode == READ_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val selectedFile = mutableListOf<Uri>()
+
+            data?.clipData?.let{ clipData ->
+                //neu nguoi dung chon nhieu tep
+                for(i in 0 until clipData.itemCount){
+                    val uri = clipData.getItemAt(i).uri
+                    selectedFile.add(uri)
+                }
+            }?:run {
+                // neu nguoi dung chi chon 1 tep
+                data?.data?.let { uri ->
+                    Log.d("TAG", "onActivityResult: $uri")
+                    selectedFile.add(uri)
                 }
             }
+
+            //xu li danh sach cac tep da chon
+            handleSelectedFiles(selectedFile)
+            Toast.makeText(context, "${selectedFile.size} note(s) added", Toast.LENGTH_SHORT).show()
         }
     }
 
-    //luu note ra dang file txt
-    private fun saveNoteToFile(note: Note, uri: Uri, fileName: String) {
-        requireContext().contentResolver.openOutputStream(uri, "wa")?.use { outputStream ->
-            val content = "Content: ${note.content}"
-            outputStream.write(content.toByteArray())
+    //ham xu ly tep
+    private fun handleSelectedFiles(uris: List<Uri>){
+        for(uri in uris){
+            val note = createNoteFromTextFile(uri)
+            noteViewModel.addNote(note)
         }
+    }
+
+    //tao note tu file txt
+    private fun createNoteFromTextFile(uri: Uri): Note {
+        val content = readTextTxt(uri)
+        val title = getFileName(uri)
+
+        //tao note moi
+        val note = Note(0, title!!, content, getCurrentTime(), null)
+        return note
+    }
+
+    //lay ten tep
+    private fun getFileName(uri: Uri):String? {
+        val contentResolver = requireContext().contentResolver
+        var fileTxtName: String? = null
+
+        val cursor = contentResolver.query(uri, null,null,null,null)
+        cursor?.use {
+            if(it.moveToFirst()){
+                val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                val fileName = if (displayNameIndex != -1) it.getString(displayNameIndex) else "Unknown"
+                fileTxtName = fileName
+            }
+        }
+        return fileTxtName
     }
 
     //doc noi dung tu file txt
@@ -445,20 +578,12 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         return stringBuilder.toString()
     }
 
-    //tao note tu file txt
-    private fun createNoteFromTextFile(uri: Uri): Note {
-        val content = readTextTxt(uri)
-
-        //tao note moi
-        val note = Note(0, "", content, getCurrentTime(), null)
-        return note
-    }
-
     // Hàm để mở tệp văn bản từ hệ thống
     private fun openTextFile() {
         val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
             addCategory(Intent.CATEGORY_OPENABLE)
             type = "text/plain" // Loại tệp văn bản
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         }
         startActivityForResult(intent, READ_FILE_REQUEST_CODE)
     }
@@ -490,7 +615,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             R.id.selectAll -> {
                 noteAdapter.selectAllItem()
                 isAlternateMenuVisible = true
-                changeNavigationIcon()
+                changeBackNavigationIcon()
                 requireActivity().invalidateOptionsMenu()
                 updateSelectedCount()
                 true
@@ -507,7 +632,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             }
 
             R.id.export_notes_to_text_file -> {
-                exportNoteToTextFile()
+                selectDirectory()
                 true
             }
 

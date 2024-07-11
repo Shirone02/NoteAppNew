@@ -98,19 +98,24 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun addCategoriesToDrawer(categories: List<Category>) {
-        val menuCategory = binding.navView.menu.findItem(R.id.nav_categories)?.subMenu ?: return
+        val menuCategory = binding.navView.menu.findItem(R.id.categories)?.subMenu ?: return
 
         // Xóa các mục cũ trước khi thêm mới
         menuCategory.clear()
-        if (categories.isEmpty()) {
-            menuCategory.add(Menu.NONE, Menu.NONE, Menu.NONE, "").setVisible(true)
-        } else {
-            for (category in categories) {
-                val menuItem =
-                    menuCategory.add(Menu.NONE, category.id, Menu.NONE, category.categoryName)
-                menuItem.setIcon(R.drawable.ic_categorized)
-            }
+        for (category in categories) {
+            val menuItem =
+                menuCategory.add(Menu.NONE, category.id, Menu.NONE, category.categoryName)
+            menuItem.setIcon(R.drawable.ic_categorized)
         }
+
+        if (categories.isNotEmpty()) {
+            val menuItem =
+                menuCategory.add(Menu.NONE, R.id.fragment_uncategorized, Menu.NONE, "Uncategorized")
+            menuItem.setIcon(R.drawable.ic_uncategorized)
+        }
+
+        menuCategory.add(Menu.NONE, R.id.fragment_edit_categories, Menu.NONE, "Edit categories")
+            .setIcon(R.drawable.ic_edit_categories)
     }
 
     private fun setUpViewModel() {
@@ -159,9 +164,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_trash -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, TrashFragment()).commit()
 
-            R.id.nav_uncategorized -> supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, UncategorizedFragment()).commit()
-
             R.id.nav_setting -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, SettingFragment()).commit()
 
@@ -173,6 +175,12 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             R.id.nav_policy -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, PrivacyPolicyFragment()).commit()
+
+            R.id.fragment_uncategorized -> supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, UncategorizedFragment()).commit()
+
+            R.id.fragment_edit_categories -> supportFragmentManager.beginTransaction()
+                .replace(R.id.fragment_container, EditCategoriesFragment()).commit()
         }
 
         binding.drawerLayout.closeDrawer(GravityCompat.START)
