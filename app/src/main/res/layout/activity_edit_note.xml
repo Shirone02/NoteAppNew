@@ -14,8 +14,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        android:background="@color/brown"
-        android:theme="@style/ToolbarTheme">
+        android:background="@color/brown">
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
@@ -23,9 +22,9 @@
             app:navigationIcon="@drawable/ic_back"
             app:navigationIconTint="@color/white"
             app:title="Notepad Free"
-            android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
+            app:titleTextColor="@color/white"
             app:menu="@menu/menu_edit_note"
-            android:tint="@color/white"/>
+            android:tint="@color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.cardview.widget.CardView

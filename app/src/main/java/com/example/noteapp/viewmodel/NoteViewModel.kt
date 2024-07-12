@@ -33,4 +33,14 @@ class NoteViewModel (app: Application, private val noteRepository: NoteRepositor
     fun getNotesWithCategories() = noteRepository.getNotesWithCategories()
 
     fun getNotesByCategory(categoryId: Int) = noteRepository.getNotesByCategory(categoryId)
+
+    fun getAllTrashNotes() = noteRepository.getAllTrashNotes()
+
+    fun moveToTrash(ids: List<Int>) = viewModelScope.launch {
+        noteRepository.moveToTrash(ids)
+    }
+
+    fun restoreFromTrash(ids: List<Int>) = viewModelScope.launch {
+        noteRepository.restoreFromTrash(ids)
+    }
 }

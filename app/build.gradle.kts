@@ -48,18 +48,20 @@ dependencies {
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.navigation.ui.ktx)
+    implementation(libs.androidx.navigation.fragment.ktx)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-    // ROOM
+
+// ROOM
     val roomVersion = "2.6.1"
-    implementation ("androidx.room:room-runtime:$roomVersion")
+    implementation("androidx.room:room-runtime:$roomVersion")
     ksp("androidx.room:room-compiler:$roomVersion")
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
-    implementation ("androidx.room:room-ktx:$roomVersion")
+    implementation("androidx.room:room-ktx:$roomVersion")
 
     // Life Cycle Arch
     val lifecycleVersion = "2.6.2"

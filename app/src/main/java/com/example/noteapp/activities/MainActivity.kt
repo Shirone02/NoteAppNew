@@ -1,42 +1,22 @@
 package com.example.noteapp.activities
 
-import android.annotation.SuppressLint
 import android.content.Intent
-import android.graphics.Color
-import android.graphics.PorterDuff
 import android.os.Bundle
-import android.util.Log
-import android.view.Gravity
 import android.view.Menu
 import android.view.MenuItem
-import android.view.View
-import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.SearchView
-import androidx.appcompat.widget.SearchView.OnQueryTextListener
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
-import androidx.core.view.children
 import androidx.lifecycle.ViewModelProvider
 import com.example.noteapp.R
-import com.example.noteapp.adapter.ListNoteAdapter
 import com.example.noteapp.database.NoteDatabase
 import com.example.noteapp.databinding.ActivityMainBinding
-import com.example.noteapp.fragments.BackupFragment
 import com.example.noteapp.fragments.EditCategoriesFragment
-import com.example.noteapp.fragments.HelpFragment
 import com.example.noteapp.fragments.NoteWithCategoryFragment
 import com.example.noteapp.fragments.NotesFragment
-import com.example.noteapp.fragments.PrivacyPolicyFragment
-import com.example.noteapp.fragments.RateFragment
-import com.example.noteapp.fragments.SettingFragment
 import com.example.noteapp.fragments.TrashFragment
 import com.example.noteapp.fragments.UncategorizedFragment
-import com.example.noteapp.listeners.OnItemClickListener
 import com.example.noteapp.models.Category
-import com.example.noteapp.models.Note
 import com.example.noteapp.repository.CategoryRepository
 import com.example.noteapp.repository.NoteCategoryRepository
 import com.example.noteapp.repository.NoteRepository
@@ -46,10 +26,7 @@ import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModelFactory
 import com.example.noteapp.viewmodel.NoteViewModel
 import com.example.noteapp.viewmodel.NoteViewModelFactory
-import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.navigation.NavigationView
-import java.util.ArrayList
-import java.util.Calendar
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -158,23 +135,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_edit_categories -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, EditCategoriesFragment()).commit()
 
-            R.id.nav_backup -> supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, BackupFragment()).commit()
+            R.id.nav_backup -> startActivity(Intent(this, BackupActivity::class.java))
 
             R.id.nav_trash -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, TrashFragment()).commit()
 
-            R.id.nav_setting -> supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, SettingFragment()).commit()
+            R.id.nav_setting -> startActivity(Intent(this, SettingsActivity::class.java))
 
-            R.id.nav_rate -> supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, RateFragment()).commit()
+            R.id.nav_rate -> false
 
-            R.id.nav_help -> supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, HelpFragment()).commit()
+            R.id.nav_help -> startActivity(Intent(this, HelpActivity::class.java))
 
-            R.id.nav_policy -> supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, PrivacyPolicyFragment()).commit()
+            R.id.nav_policy -> startActivity(Intent(this, PrivacyPolicyActivity::class.java))
 
             R.id.fragment_uncategorized -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, UncategorizedFragment()).commit()

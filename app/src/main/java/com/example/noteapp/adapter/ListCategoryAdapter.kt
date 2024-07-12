@@ -63,6 +63,7 @@ class ListCategoryAdapter(private val context: Context) :
         }
     }
 
+    // hien thi hop thoai xoa category
     private fun showDeleteCategoryDialog(context: Context, position: Int){
         val alertDialog = AlertDialog.Builder(context)
             .setMessage("Delete category '${differ.currentList[position].categoryName}'? Notes from the category won't be deleted.")
@@ -77,6 +78,7 @@ class ListCategoryAdapter(private val context: Context) :
         alertDialog.show()
     }
 
+    //hien thi hop thoai chinh sua category
     private fun showEditCategoryDialog(context: Context, position: Int) {
         // Tạo layout inflater và inflate layout cho hộp thoại
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_category, null)

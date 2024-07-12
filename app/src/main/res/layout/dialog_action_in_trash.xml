@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="16dp"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/trashTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Trash"
+        android:layout_marginTop="32dp"
+        android:layout_marginLeft="8dp"
+        android:textSize="16sp"
+        android:textColor="@color/black" />
+
+    <TextView
+        android:id="@+id/trashContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="8dp"
+        android:text="content"
+        android:textSize="14sp"
+        android:textColor="@color/black" />
+
+    <!-- Đường kẻ mờ -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/gray"
+        android:alpha="1" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Select an action for the note:"
+        android:layout_marginLeft="8dp"
+        android:textSize="16sp"
+        android:textColor="@color/black"/>
+
+    <RadioGroup
+        android:id="@+id/actionRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginLeft="8dp">
+
+        <RadioButton
+            android:id="@+id/rbUndelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Undelete" />
+
+        <RadioButton
+            android:id="@+id/rbDelete"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete"/>
+
+    </RadioGroup>
+
+</LinearLayout>

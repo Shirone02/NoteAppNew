@@ -1,8 +1,13 @@
 package com.example.noteapp.fragments
 
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
+import android.provider.OpenableColumns
 import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -35,6 +40,9 @@ import com.example.noteapp.models.NoteCategoryCrossRef
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -49,12 +57,21 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var categoryViewModel: CategoryViewModel
     private lateinit var noteCategoryViewModel: NoteCategoryViewModel
+
     private lateinit var noteAdapter: ListNoteAdapter
     private lateinit var categoryAdapter: ListCategoryAdapter
+
     private lateinit var uncategorizedView: View
+
     private lateinit var categories: List<Category>
     private lateinit var currentList: List<Note>
     private var isAlternateMenuVisible: Boolean = false
+
+    companion object {
+        private const val READ_FILE_REQUEST_CODE = 101
+        private const val REQUEST_WRITE_PERMISSION = 1001
+        private const val REQUEST_CODE_PICK_DIRECTORY = 1002
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -88,14 +105,14 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
     //thêm note
     private fun addNote() {
-        val note = Note(0, "", "", getCurrentTime(), null)
+        val note = Note(0, "", "", getCurrentTime(), getCurrentTime(), false)
         noteViewModel.addNote(note)
 
         val intent = Intent(context, EditNoteActivity::class.java)
         intent.putExtra("id", note.id)
         intent.putExtra("title", note.title)
         intent.putExtra("content", note.content)
-        intent.putExtra("categoryId", note.categoryId)
+        intent.putExtra("created", note.created)
         startActivity(intent)
 
         Toast.makeText(context, "Add successful !!!", Toast.LENGTH_SHORT).show()
@@ -155,13 +172,14 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
     }
 
     private fun setUpNoteRecyclerView() {
-        noteAdapter = ListNoteAdapter(object : OnItemClickListener {
+        noteAdapter = ListNoteAdapter(requireContext(), object : OnItemClickListener {
             override fun onNoteClick(note: Note, isChoose: Boolean) {
                 if (!isChoose && !isAlternateMenuVisible) {
                     val intent = Intent(activity, EditNoteActivity::class.java)
                     intent.putExtra("id", note.id)
                     intent.putExtra("title", note.title)
                     intent.putExtra("content", note.content)
+                    intent.putExtra("created", note.created)
                     startActivity(intent)
                 }
 
@@ -364,6 +382,164 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
         }
     }
 
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_WRITE_PERMISSION) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                selectDirectory()
+            } else {
+                Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
+    //chon thu muc
+    private fun selectDirectory() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        startActivityForResult(intent, REQUEST_CODE_PICK_DIRECTORY)
+    }
+
+    //Export note ra file txt
+    private fun exportNoteToTextFile(uri: Uri) {
+        var selectedNotes = noteAdapter.getSelectedItems()
+        if(selectedNotes.isEmpty()){
+            selectedNotes = noteAdapter.differ.currentList.toSet()
+        }
+        selectedNotes.forEach { note ->
+            val fileName = "${note.title}.txt"
+            createFile(uri, fileName, note.content)
+        }
+        Toast.makeText(requireContext(), "${selectedNotes.size} note(s) exported", Toast.LENGTH_SHORT)
+            .show()
+    }
+
+    private fun createFile(uri: Uri, fileName: String, content: String) {
+        try {
+            val documentUri = DocumentsContract.buildDocumentUriUsingTree(
+                uri,
+                DocumentsContract.getTreeDocumentId(uri)
+            )
+            val docUri = DocumentsContract.createDocument(
+                requireContext().contentResolver,
+                documentUri,
+                "text/plain",
+                fileName
+            )
+            docUri?.let {
+                requireContext().contentResolver.openOutputStream(it)?.use { outputStream ->
+                    outputStream.write(content.toByteArray())
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_PICK_DIRECTORY && resultCode == Activity.RESULT_OK) {
+            val uri = data?.data
+            // Lưu Uri bằng cách sử dụng quyền có thể duy trì
+            uri?.let {
+                exportNoteToTextFile(it)
+            }
+        }
+
+        if (requestCode == READ_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val selectedFile = mutableListOf<Uri>()
+
+            data?.clipData?.let{ clipData ->
+                //neu nguoi dung chon nhieu tep
+                for(i in 0 until clipData.itemCount){
+                    val uri = clipData.getItemAt(i).uri
+                    selectedFile.add(uri)
+                }
+            }?:run {
+                // neu nguoi dung chi chon 1 tep
+                data?.data?.let { uri ->
+                    Log.d("TAG", "onActivityResult: $uri")
+                    selectedFile.add(uri)
+                }
+            }
+
+            //xu li danh sach cac tep da chon
+            handleSelectedFiles(selectedFile)
+            Toast.makeText(context, "${selectedFile.size} note(s) added", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    //ham xu ly tep
+    private fun handleSelectedFiles(uris: List<Uri>){
+        for(uri in uris){
+            val note = createNoteFromTextFile(uri)
+            noteViewModel.addNote(note)
+        }
+    }
+
+    //tao note tu file txt
+    private fun createNoteFromTextFile(uri: Uri): Note {
+        val content = readTextTxt(uri)
+        val title = getFileName(uri)
+
+        //tao note moi
+        val note = Note(0, title!!, content, getCurrentTime(), getCurrentTime(), false)
+        return note
+    }
+
+    //lay ten tep
+    private fun getFileName(uri: Uri):String? {
+        val contentResolver = requireContext().contentResolver
+        var fileTxtName: String? = null
+
+        val cursor = contentResolver.query(uri, null,null,null,null)
+        cursor?.use {
+            if(it.moveToFirst()){
+                val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                val fileName = if (displayNameIndex != -1) it.getString(displayNameIndex) else "Unknown"
+                fileTxtName = fileName
+            }
+        }
+        return fileTxtName
+    }
+
+    //doc noi dung tu file txt
+    private fun readTextTxt(uri: Uri): String {
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        val stringBuilder = StringBuilder()
+        var line: String?
+        try {
+            while (reader.readLine().also { line = it } != null) {
+                stringBuilder.append(line).append("\n")
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            try {
+                inputStream?.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return stringBuilder.toString()
+    }
+
+    // Hàm để mở tệp văn bản từ hệ thống
+    private fun openTextFile() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "text/plain" // Loại tệp văn bản
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        }
+        startActivityForResult(intent, READ_FILE_REQUEST_CODE)
+    }
+
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
         menu.clear()
         menuInflater.inflate(
@@ -403,6 +579,16 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
             R.id.categorize -> {
                 showCategorizeDialog()
+                true
+            }
+
+            R.id.import_text_files -> {
+                openTextFile()
+                true
+            }
+
+            R.id.export_notes_to_text_file -> {
+                selectDirectory()
                 true
             }
 

@@ -123,7 +123,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     }
 
     private fun setUpNoteRecyclerView() {
-        noteAdapter = ListNoteAdapter(object : OnItemClickListener {
+        noteAdapter = ListNoteAdapter(requireContext(), object : OnItemClickListener {
             override fun onNoteClick(note: Note, isChoose: Boolean) {
                 if (!isChoose && !isAlternateMenuVisible) {
                     val intent = Intent(activity, EditNoteActivity::class.java)

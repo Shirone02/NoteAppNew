@@ -21,7 +21,7 @@ interface NoteDao {
         FROM notes 
         LEFT JOIN note_category_cross_ref 
         ON notes.id = note_category_cross_ref.noteId 
-        WHERE note_category_cross_ref.categoryId IS NULL
+        WHERE note_category_cross_ref.categoryId IS NULL and isInTrash = 0
     """)
     fun getNotesWithoutCategory(): LiveData<List<Note>>
 
@@ -34,8 +34,17 @@ interface NoteDao {
     """)
     fun getNotesByCategory(categoryId: Int): LiveData<List<Note>>
 
-    @Query("select * from notes order by id desc")
+    @Query("select * from notes where isInTrash = 0 order by id desc ")
     fun getAllNotes(): LiveData<List<Note>>
+
+    @Query("select * from notes where isInTrash = 1 order by id desc ")
+    fun getAllTrashNotes(): LiveData<List<Note>>
+
+    @Query("update notes set isInTrash = 1 where id in (:ids)")
+    suspend fun moveToTrash(ids: List<Int>)
+
+    @Query("update notes set isInTrash = 0 where id in (:ids)")
+    suspend fun restoreFromTrash(ids: List<Int>)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertNote(note: Note)

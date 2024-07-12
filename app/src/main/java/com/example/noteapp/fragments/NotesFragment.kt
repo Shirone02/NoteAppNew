@@ -59,9 +59,12 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var noteCategoryViewModel: NoteCategoryViewModel
     private lateinit var categoryViewModel: CategoryViewModel
+
     private lateinit var noteAdapter: ListNoteAdapter
     private lateinit var categoryAdapter: ListCategoryAdapter
+
     private lateinit var currentList: List<Note>
+
     private lateinit var noteView: View
     private var isAlternateMenuVisible: Boolean = false
     private lateinit var categories: List<Category>
@@ -103,29 +106,31 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private fun addNote() {
-        val note = Note(0, "", "", getCurrentTime(), null)
+        val note = Note(0, "", "", getCurrentTime(), getCurrentTime(), false)
         noteViewModel.addNote(note)
 
         val intent = Intent(requireContext(), EditNoteActivity::class.java)
         intent.putExtra("id", note.id)
         intent.putExtra("title", note.title)
         intent.putExtra("content", note.content)
-        intent.putExtra("categoryId", note.categoryId)
+        intent.putExtra("created", note.created)
+        intent.putExtra("time", note.time)
         startActivity(intent)
+
 
         Toast.makeText(requireContext(), "Add successful !!!", Toast.LENGTH_SHORT).show()
     }
 
     //set up recycler View
     private fun setupNoteRecyclerView() {
-        noteAdapter = ListNoteAdapter(object : OnItemClickListener {
+        noteAdapter = ListNoteAdapter(requireContext(), object : OnItemClickListener {
             override fun onNoteClick(note: Note, isChoose: Boolean) {
                 if (!isChoose && !isAlternateMenuVisible) {
                     val intent = Intent(context, EditNoteActivity::class.java)
                     intent.putExtra("id", note.id)
                     intent.putExtra("title", note.title)
                     intent.putExtra("content", note.content)
-                    intent.putExtra("categoryId", note.categoryId)
+                    intent.putExtra("created", note.created)
                     intent.putExtra("time", note.time)
                     startActivity(intent)
                 }
@@ -331,13 +336,9 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     private fun deleteSelectedItem() {
         val selectedNotes = noteAdapter.getSelectedItems()
         val selectedIds = selectedNotes.map { it.id }
-        noteViewModel.deleteNotes(selectedIds)
+        //noteViewModel.deleteNotes(selectedIds)
+        noteViewModel.moveToTrash(selectedIds)
         noteAdapter.removeSelectedItems()
-
-        isAlternateMenuVisible = !isAlternateMenuVisible
-        changeBackNavigationIcon()
-        requireActivity().invalidateOptionsMenu()
-        updateSelectedCount()
     }
 
     //xoa toan bo lua chon
@@ -353,11 +354,13 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             "title: A to Z",
             "title: Z to A",
             "creation date: from newest",
-            "creation date: from oldest"
+            "creation date: from oldest",
+            "color: in order as shown on color palette"
         )
 
         var selectedOption = 0
         val noteList = noteAdapter.differ.currentList
+
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
         builder.setTitle("Sort by")
             .setPositiveButton("Sort") { dialog, which ->
@@ -375,6 +378,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             }
             .setSingleChoiceItems(sortOption, selectedOption) { dialog, which ->
                 selectedOption = which
+                if(selectedOption == 4 || selectedOption == 5){
+                    noteAdapter.isCreated = true
+                } else {
+                    noteAdapter.isCreated = true
+                }
             }
 
         builder.create().show()
@@ -457,7 +465,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     //Export note ra file txt
     private fun exportNoteToTextFile(uri: Uri) {
-        val selectedNotes = noteAdapter.getSelectedItems()
+        var selectedNotes = noteAdapter.getSelectedItems()
+        if(selectedNotes.isEmpty()){
+            selectedNotes = noteAdapter.differ.currentList.toSet()
+        }
         selectedNotes.forEach { note ->
             val fileName = "${note.title}.txt"
             createFile(uri, fileName, note.content)
@@ -487,6 +498,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             e.printStackTrace()
         }
     }
+
+
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
@@ -536,7 +549,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         val title = getFileName(uri)
 
         //tao note moi
-        val note = Note(0, title!!, content, getCurrentTime(), null)
+        val note = Note(0, title!!, content, getCurrentTime(), getCurrentTime(), false)
         return note
     }
 

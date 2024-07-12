@@ -27,7 +27,10 @@ import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModelFactory
 import com.example.noteapp.viewmodel.NoteViewModel
 import com.example.noteapp.viewmodel.NoteViewModelFactory
+import java.text.SimpleDateFormat
 import java.util.Calendar
+import java.util.Locale
+import kotlin.math.log
 
 class EditNoteActivity : AppCompatActivity() {
 
@@ -37,7 +40,8 @@ class EditNoteActivity : AppCompatActivity() {
 
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var currentContent: String
-    private val textHistory = mutableListOf<Pair<String, Int>>()
+    private val textUndo = mutableListOf<Pair<String, Int>>()
+    private val textRedo = mutableListOf<Pair<String, Int>>()
     private lateinit var categoryViewModel: CategoryViewModel
     private lateinit var noteCategoryViewModel: NoteCategoryViewModel
     private lateinit var categoryAdapter: ListCategoryAdapter
@@ -62,6 +66,7 @@ class EditNoteActivity : AppCompatActivity() {
             saveNote()
             finish()
         }
+
         binding.topAppBar.setOnMenuItemClickListener {
             when (it.itemId) {
                 R.id.Save -> {
@@ -75,7 +80,8 @@ class EditNoteActivity : AppCompatActivity() {
                 }
 
                 R.id.Redo -> {
-                    false
+                    redoNote()
+                    true
                 }
 
                 R.id.undo_all -> {
@@ -84,7 +90,8 @@ class EditNoteActivity : AppCompatActivity() {
                 }
 
                 R.id.Share -> {
-                    false
+                    shareNote()
+                    true
                 }
 
                 R.id.export_text_a_file -> {
@@ -94,7 +101,6 @@ class EditNoteActivity : AppCompatActivity() {
 
                 R.id.delete -> {
                     deleteNote()
-
                     true
                 }
 
@@ -124,7 +130,8 @@ class EditNoteActivity : AppCompatActivity() {
                 }
 
                 R.id.showInfo -> {
-                    false
+                    showInfoDialog()
+                    true
                 }
 
                 else -> {
@@ -136,13 +143,12 @@ class EditNoteActivity : AppCompatActivity() {
         binding.edtContent.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(p0: CharSequence?, p1: Int, p2: Int, p3: Int) {
                 if (!isUndo) {
-                    textHistory.add(
+                    textUndo.add(
                         Pair(
                             binding.edtContent.text.toString(),
                             binding.edtContent.selectionStart
                         )
                     )
-                    Log.d("TAG", "beforeTextChanged: $textHistory")
                 } else {
                     isUndo = false
                 }
@@ -159,9 +165,36 @@ class EditNoteActivity : AppCompatActivity() {
         })
     }
 
+    //chia se note
+    private fun shareNote() {
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+        }
+        startActivity(Intent.createChooser(shareIntent, null))
+    }
+
+    //hien thi ra info
+    private fun showInfoDialog() {
+        val words =
+            binding.edtContent.text.trim().split("\\s+".toRegex()).filter { it.isNotBlank() }.size
+        val characters = binding.edtContent.text.count()
+        val charactersWithoutWhitespaces =
+            binding.edtContent.text.filter { !it.isWhitespace() }.length
+        val created = intent.getStringExtra("created")
+        val time = intent.getStringExtra("time")
+
+        val builder: AlertDialog.Builder = AlertDialog.Builder(this)
+            .setMessage("Words: $words \nWrapped lines: 1 \nCharacters: $characters \nCharacters without whitespaces: $charactersWithoutWhitespaces \nCreated at: $created \nLast saved at: $time")
+            .setPositiveButton("OK") { dialog, _ ->
+                dialog.dismiss()
+            }
+
+        builder.create().show()
+    }
+
     //xoa note
     private fun deleteNote() {
-        val message = if(binding.edtTitle.text.toString() == "") {
+        val message = if (binding.edtTitle.text.toString() == "") {
             "Untitled"
         } else {
             binding.edtTitle.text
@@ -174,9 +207,18 @@ class EditNoteActivity : AppCompatActivity() {
                 val title = intent.getStringExtra("title")
                 val content = intent.getStringExtra("content")
                 val categoryId = intent.getIntExtra("categoryId", 0)
+                val created = intent.getStringExtra("created")
                 val time = intent.getStringExtra("time")
 
-                val note = Note(id, title.toString(), content.toString(), time.toString(),categoryId)
+                val note =
+                    Note(
+                        id,
+                        title.toString(),
+                        content.toString(),
+                        time.toString(),
+                        created.toString(),
+                        false
+                    )
                 noteViewModel.deleteNote(note)
                 finish()
                 dialog.dismiss()
@@ -264,32 +306,39 @@ class EditNoteActivity : AppCompatActivity() {
 
     private fun saveNote() {
         val id = intent.getIntExtra("id", 0)
-        val categoryId = intent.getIntExtra("categoryId", 0)
+        val created = intent.getStringExtra("created")
 
         val noteTitle = binding.edtTitle.text.toString()
         val noteContent = binding.edtContent.text.toString()
 
-        if (categoryId == 0) {
-            val note = Note(id, noteTitle, noteContent, getCurrentTime(), null)
-            noteViewModel.updateNote(note)
-        } else {
-            val note = Note(id, noteTitle, noteContent, getCurrentTime(), categoryId)
-            noteViewModel.updateNote(note)
-        }
+        val note = Note(id, noteTitle, noteContent, getCurrentTime(), created!!, false)
+        noteViewModel.updateNote(note)
 
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
     }
 
-    private fun undoNote() {
-        if (textHistory.isNotEmpty()) {
-            isUndo = true
-            val (previousText, previousCursorPosition) = textHistory.removeLast()
-            Log.d("TAG", "undoNote: $previousText, $previousCursorPosition")
+    //redo
+    private fun redoNote() {
+        if (textRedo.isNotEmpty()) {
+            val (previousText, previousCursorPosition) = textRedo.removeLast()
+            textUndo.add(Pair(previousText, previousCursorPosition))
             binding.edtContent.setText(previousText)
             binding.edtContent.setSelection(previousCursorPosition)
         }
     }
 
+    //undo
+    private fun undoNote() {
+        if (textUndo.isNotEmpty()) {
+            isUndo = true
+            val (previousText, previousCursorPosition) = textUndo.removeLast()
+            textRedo.add(Pair(previousText, previousCursorPosition))
+            binding.edtContent.setText(previousText)
+            binding.edtContent.setSelection(previousCursorPosition)
+        }
+    }
+
+    //undo tat ca
     private fun undoAll() {
         binding.edtContent.setText(currentContent)
     }
@@ -301,7 +350,8 @@ class EditNoteActivity : AppCompatActivity() {
 
         val categoryRepository = CategoryRepository(NoteDatabase(this))
         val cateViewModelProviderFactory = CategoryViewModelFactory(application, categoryRepository)
-        categoryViewModel = ViewModelProvider(this, cateViewModelProviderFactory)[CategoryViewModel::class.java]
+        categoryViewModel =
+            ViewModelProvider(this, cateViewModelProviderFactory)[CategoryViewModel::class.java]
 
         val noteCategoryRepository = NoteCategoryRepository(NoteDatabase(this))
         val noteCategoryViewModelFactory =
@@ -321,14 +371,10 @@ class EditNoteActivity : AppCompatActivity() {
 
     private fun getCurrentTime(): String {
         val calendar = Calendar.getInstance()
-        val year = calendar.get(Calendar.YEAR)
-        val month = calendar.get(Calendar.MONTH) + 1 // Tháng trong Calendar bắt đầu từ 0
-        val day = calendar.get(Calendar.DAY_OF_MONTH)
-        val hour = calendar.get(Calendar.HOUR_OF_DAY)
-        val minute = calendar.get(Calendar.MINUTE)
-        val second = calendar.get(Calendar.SECOND)
 
-        val formattedDate = "$day/$month/$year $hour:$minute:$second"
+        val formattedDate =
+            SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.getDefault()).format(calendar.time)
+
         return formattedDate
     }
 }

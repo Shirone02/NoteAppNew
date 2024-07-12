@@ -22,17 +22,16 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            android:background="@color/brown"
-            android:theme="@style/ToolbarTheme">
+            android:background="@color/brown">
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/topAppBar"
                 android:layout_width="match_parent"
                 android:layout_height="?attr/actionBarSize"
                 app:navigationIcon="@drawable/ic_option"
                 app:title="Notepad Free"
-                android:theme="@style/ThemeOverlay.AppCompat.ActionBar"
                 app:menu="@menu/top_app_bar"
-                android:tint="@color/white"/>
+                app:titleTextColor="@color/white"
+                app:navigationIconTint="@color/white"/>
         </com.google.android.material.appbar.AppBarLayout>
 
         <FrameLayout
