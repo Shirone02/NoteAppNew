@@ -9,7 +9,7 @@ import com.example.noteapp.models.Note
 import com.example.noteapp.models.NoteCategoryCrossRef
 
 
-@Database(entities = [Note::class, Category::class, NoteCategoryCrossRef::class], version = 2, exportSchema = true)
+@Database(entities = [Note::class, Category::class, NoteCategoryCrossRef::class], version = 1, exportSchema = true)
 abstract class NoteDatabase : RoomDatabase() {
 
     abstract fun getNoteDao(): NoteDao

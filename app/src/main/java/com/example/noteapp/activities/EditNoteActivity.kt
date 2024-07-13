@@ -311,9 +311,13 @@ class EditNoteActivity : AppCompatActivity() {
         val noteTitle = binding.edtTitle.text.toString()
         val noteContent = binding.edtContent.text.toString()
 
-        val note = Note(id, noteTitle, noteContent, getCurrentTime(), created!!, false)
-        noteViewModel.updateNote(note)
-
+        if(id == 0){
+            val note = Note(noteViewModel.getLatestId(), noteTitle, noteContent, getCurrentTime(), created!!, false)
+            noteViewModel.updateNote(note)
+        } else {
+            val note = Note(id, noteTitle, noteContent, getCurrentTime(), created!!, false)
+            noteViewModel.updateNote(note)
+        }
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
     }
 

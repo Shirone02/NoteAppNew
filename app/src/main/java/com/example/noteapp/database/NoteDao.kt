@@ -61,4 +61,6 @@ interface NoteDao {
     @Query("DELETE FROM notes WHERE id IN (:ids)")
     suspend fun deleteByIds(ids: List<Int>)
 
+    @Query("SELECT MAX(id) FROM notes where isInTrash = 0")
+    fun getLatestId(): Int
 }

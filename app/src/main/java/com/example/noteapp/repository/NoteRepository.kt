@@ -10,6 +10,7 @@ class NoteRepository(private val db: NoteDatabase) {
     suspend fun deleteByIds(ids: List<Int>) = db.getNoteDao().deleteByIds(ids)
     suspend fun moveToTrash(ids: List<Int>) = db.getNoteDao().moveToTrash(ids)
     suspend fun restoreFromTrash(ids: List<Int>) = db.getNoteDao().restoreFromTrash(ids)
+    fun getLatestId() = db.getNoteDao().getLatestId()
 
     fun getNotesWithoutCategory() = db.getNoteDao().getNotesWithoutCategory()
     fun getAllTrashNotes() = db.getNoteDao().getAllTrashNotes()

@@ -117,7 +117,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         intent.putExtra("time", note.time)
         startActivity(intent)
 
-
         Toast.makeText(requireContext(), "Add successful !!!", Toast.LENGTH_SHORT).show()
     }
 
