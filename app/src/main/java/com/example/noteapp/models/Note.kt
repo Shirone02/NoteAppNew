@@ -18,6 +18,8 @@ data class Note(
     val time: String,
     @ColumnInfo(name = "created")
     val created: String,
+    @ColumnInfo(name = "color")
+    var color: String? = null,
     @ColumnInfo(name = "isInTrash")
     var isInTrash: Boolean = false,
 )

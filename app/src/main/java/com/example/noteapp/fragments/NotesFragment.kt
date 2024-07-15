@@ -1,6 +1,7 @@
 package com.example.noteapp.fragments
 
 import android.Manifest
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -15,6 +16,8 @@ import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
@@ -27,14 +30,17 @@ import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
-import androidx.room.util.findColumnIndexBySuffix
+import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapp.R
 import com.example.noteapp.activities.EditNoteActivity
 import com.example.noteapp.activities.MainActivity
 import com.example.noteapp.adapter.ListCategoryAdapter
+import com.example.noteapp.adapter.ListColorAdapter
 import com.example.noteapp.adapter.ListNoteAdapter
 import com.example.noteapp.databinding.FragmentNotesBinding
+import com.example.noteapp.listeners.OnColorClickListener
 import com.example.noteapp.listeners.OnItemClickListener
 import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
@@ -50,7 +56,8 @@ import java.util.Calendar
 import java.util.Locale
 
 
-class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTextListener {
+class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTextListener,
+    OnColorClickListener {
 
     private val binding: FragmentNotesBinding by lazy {
         FragmentNotesBinding.inflate(layoutInflater)
@@ -62,12 +69,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     private lateinit var noteAdapter: ListNoteAdapter
     private lateinit var categoryAdapter: ListCategoryAdapter
+    private lateinit var colorAdapter: ListColorAdapter
 
     private lateinit var currentList: List<Note>
 
     private lateinit var noteView: View
     private var isAlternateMenuVisible: Boolean = false
     private lateinit var categories: List<Category>
+    private var selectedColor: String? = null
+    private val colors = listOf(
+        "#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9",
+        "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9",
+        "#DCEDC8", "#F0F4C3", "#FFECB3", "#FFE0B2", "#FFCCBC",
+        "#D7CCC8", "#F5F5F5", "#CFD8DC", "#FF8A80", "#FF80AB"
+    )
 
     companion object {
         private const val READ_FILE_REQUEST_CODE = 101
@@ -106,7 +121,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private fun addNote() {
-        val note = Note(0, "", "", getCurrentTime(), getCurrentTime(), false)
+        val note = Note(0, "", "", getCurrentTime(), getCurrentTime(), null, false)
         noteViewModel.addNote(note)
 
         val intent = Intent(requireContext(), EditNoteActivity::class.java)
@@ -115,6 +130,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         intent.putExtra("content", note.content)
         intent.putExtra("created", note.created)
         intent.putExtra("time", note.time)
+        intent.putExtra("color", note.color)
         startActivity(intent)
 
         Toast.makeText(requireContext(), "Add successful !!!", Toast.LENGTH_SHORT).show()
@@ -131,6 +147,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                     intent.putExtra("content", note.content)
                     intent.putExtra("created", note.created)
                     intent.putExtra("time", note.time)
+                    intent.putExtra("color", note.color)
                     startActivity(intent)
                 }
 
@@ -377,7 +394,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             }
             .setSingleChoiceItems(sortOption, selectedOption) { dialog, which ->
                 selectedOption = which
-                if(selectedOption == 4 || selectedOption == 5){
+                if (selectedOption == 4 || selectedOption == 5) {
                     noteAdapter.isCreated = true
                 } else {
                     noteAdapter.isCreated = true
@@ -465,14 +482,18 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     //Export note ra file txt
     private fun exportNoteToTextFile(uri: Uri) {
         var selectedNotes = noteAdapter.getSelectedItems()
-        if(selectedNotes.isEmpty()){
+        if (selectedNotes.isEmpty()) {
             selectedNotes = noteAdapter.differ.currentList.toSet()
         }
         selectedNotes.forEach { note ->
             val fileName = "${note.title}.txt"
             createFile(uri, fileName, note.content)
         }
-        Toast.makeText(requireContext(), "${selectedNotes.size} note(s) exported", Toast.LENGTH_SHORT)
+        Toast.makeText(
+            requireContext(),
+            "${selectedNotes.size} note(s) exported",
+            Toast.LENGTH_SHORT
+        )
             .show()
     }
 
@@ -499,7 +520,6 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
 
-
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
 
@@ -514,13 +534,13 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         if (requestCode == READ_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val selectedFile = mutableListOf<Uri>()
 
-            data?.clipData?.let{ clipData ->
+            data?.clipData?.let { clipData ->
                 //neu nguoi dung chon nhieu tep
-                for(i in 0 until clipData.itemCount){
+                for (i in 0 until clipData.itemCount) {
                     val uri = clipData.getItemAt(i).uri
                     selectedFile.add(uri)
                 }
-            }?:run {
+            } ?: run {
                 // neu nguoi dung chi chon 1 tep
                 data?.data?.let { uri ->
                     Log.d("TAG", "onActivityResult: $uri")
@@ -535,8 +555,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     //ham xu ly tep
-    private fun handleSelectedFiles(uris: List<Uri>){
-        for(uri in uris){
+    private fun handleSelectedFiles(uris: List<Uri>) {
+        for (uri in uris) {
             val note = createNoteFromTextFile(uri)
             noteViewModel.addNote(note)
         }
@@ -548,20 +568,21 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         val title = getFileName(uri)
 
         //tao note moi
-        val note = Note(0, title!!, content, getCurrentTime(), getCurrentTime(), false)
+        val note = Note(0, title!!, content, getCurrentTime(), getCurrentTime(), null, false)
         return note
     }
 
     //lay ten tep
-    private fun getFileName(uri: Uri):String? {
+    private fun getFileName(uri: Uri): String? {
         val contentResolver = requireContext().contentResolver
         var fileTxtName: String? = null
 
-        val cursor = contentResolver.query(uri, null,null,null,null)
+        val cursor = contentResolver.query(uri, null, null, null, null)
         cursor?.use {
-            if(it.moveToFirst()){
+            if (it.moveToFirst()) {
                 val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                val fileName = if (displayNameIndex != -1) it.getString(displayNameIndex) else "Unknown"
+                val fileName =
+                    if (displayNameIndex != -1) it.getString(displayNameIndex) else "Unknown"
                 fileTxtName = fileName
             }
         }
@@ -598,6 +619,67 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
         }
         startActivityForResult(intent, READ_FILE_REQUEST_CODE)
+    }
+
+    //thay doi mau cua note
+    @SuppressLint("InflateParams")
+    private fun showColorPickerDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_colorize, null)
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.rcvColor)
+        val removeColor = dialogView.findViewById<Button>(R.id.removeColorBtn)
+        var isRemove = false
+
+        recyclerView.layoutManager = GridLayoutManager(context, 5)
+        colorAdapter = ListColorAdapter(colors, this)
+        recyclerView.adapter = colorAdapter
+
+        removeColor.setOnClickListener {
+            isRemove = true
+        }
+
+        val builder = AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setNegativeButton("CANCEL") { dialog, _ ->
+                dialog.dismiss()
+            }.setPositiveButton("OK") { dialog, which ->
+                if (isRemove) selectedColor = null
+                handleOkButtonClick()
+                dialog.dismiss()
+            }
+
+        builder.create().show()
+
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun handleOkButtonClick() {
+        val selectedNotes = noteAdapter.getSelectedItems()
+
+        selectedColor.let { color ->
+            if (selectedColor.isNullOrEmpty()) {
+                selectedNotes.forEach { note ->
+                    note.color = color
+                    Log.d("TAG", "handleOkButtonClick: ${note.color}")
+                    noteViewModel.updateNote(note)
+                }
+            } else {
+                selectedNotes.forEach { note ->
+                    note.color = color
+                    Log.d("TAG", "handleOkButtonClick: ${note.color}")
+                    noteViewModel.updateNote(note)
+                }
+            }
+        }
+
+        noteAdapter.notifyDataSetChanged()
+        isAlternateMenuVisible = !isAlternateMenuVisible
+        changeDrawerNavigationIcon()
+        requireActivity().invalidateOptionsMenu()
+        updateSelectedCount()
+    }
+
+    override fun onColorClick(color: String) {
+        selectedColor = color
     }
 
     override fun onCreateMenu(menu: Menu, menuInflater: MenuInflater) {
@@ -650,6 +732,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
             R.id.import_text_files -> {
                 openTextFile()
+                true
+            }
+
+            R.id.Colorize -> {
+                showColorPickerDialog()
                 true
             }
 

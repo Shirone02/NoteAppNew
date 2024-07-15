@@ -5,8 +5,8 @@
     <color name="gray"> #D3D3D3</color>
     <color name="darkYellow">#F4F2BD</color>
     <color name="yellow">#FAF9D5</color>
-    <color name="lightYellow">#66FFFDC3</color>
-    <color name="brown">#84661B</color>
+    <color name="lightYellow">#FFFFDE</color>
+    <color name="brown">#947757</color>
     <color name="red">#A0312A</color>
-    <color name="green">#525319</color>
+    <color name="green">#7B6945</color>
 </resources>

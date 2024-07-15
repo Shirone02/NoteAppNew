@@ -105,7 +105,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
     //thêm note
     private fun addNote() {
-        val note = Note(0, "", "", getCurrentTime(), getCurrentTime(), false)
+        val note = Note(0, "", "", getCurrentTime(), getCurrentTime(), null, false)
         noteViewModel.addNote(note)
 
         val intent = Intent(context, EditNoteActivity::class.java)
@@ -488,7 +488,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
         val title = getFileName(uri)
 
         //tao note moi
-        val note = Note(0, title!!, content, getCurrentTime(), getCurrentTime(), false)
+        val note = Note(0, title!!, content, getCurrentTime(), getCurrentTime(), null, false)
         return note
     }
 

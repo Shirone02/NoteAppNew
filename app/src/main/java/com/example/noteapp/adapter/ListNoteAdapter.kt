@@ -3,10 +3,13 @@ package com.example.noteapp.adapter
 import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
+import android.graphics.drawable.LayerDrawable
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
@@ -46,6 +49,7 @@ class ListNoteAdapter(
         var time: TextView = itemView.findViewById(R.id.tvTime)
         var title: TextView = itemView.findViewById(R.id.tvTitle)
         var category: TextView = itemView.findViewById(R.id.tvCategory)
+        var noteLayout: LinearLayout = itemView.findViewById(R.id.noteLayout)
     }
 
     private val selectedItems = mutableSetOf<Note>()
@@ -61,7 +65,7 @@ class ListNoteAdapter(
         return viewholder(itemView)
     }
 
-    @SuppressLint("SetTextI18n")
+    @SuppressLint("SetTextI18n", "ResourceAsColor")
     override fun onBindViewHolder(holder: ListNoteAdapter.viewholder, position: Int) {
         if (differ.currentList[position].title == "") {
             holder.title.text = "Untitled"
@@ -71,12 +75,9 @@ class ListNoteAdapter(
 
         if (!isCreated) {
             holder.time.text = "Last edit: " + differ.currentList[position].time
-            Log.d("TAG", "onBindViewHolder: $isCreated")
         } else {
             holder.time.text = "Created: " + differ.currentList[position].created
-            Log.d("TAG", "onBindViewHolder: $isCreated")
         }
-
 
         val categoryList = categoryViewModel.getCategoryNameById(differ.currentList[position].id)
         if (categoryList.size > 2) {
@@ -90,6 +91,20 @@ class ListNoteAdapter(
                 holder.category.text = null
             }
         }
+
+        if (differ.currentList[position].color != null) {
+//            val layerDrawable = holder.noteLayout.background as LayerDrawable
+//            val backgroundDrawable = layerDrawable.getDrawable(1) as GradientDrawable
+//            backgroundDrawable.setColor(Color.parseColor(differ.currentList[position].color ?: "#FFFFFF"))
+
+            val backgroundDrawable = GradientDrawable()
+            backgroundDrawable.setColor(Color.parseColor(differ.currentList[position].color ?: "#FFFFFF"))
+            backgroundDrawable.setStroke(4, R.color.brown)
+            holder.noteLayout.background = backgroundDrawable
+        } else {
+            holder.noteLayout.setBackgroundResource(R.drawable.bg_item)
+        }
+
 
         holder.itemView.isSelected = selectedItems.contains(differ.currentList[position])
 
