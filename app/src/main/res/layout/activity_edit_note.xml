@@ -39,6 +39,7 @@
         app:cardCornerRadius="5dp">
 
         <LinearLayout
+            android:id="@+id/edit_note"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:orientation="vertical"
@@ -51,15 +52,43 @@
                 android:layout_margin="8dp"
                 android:hint="Enter title..."
                 android:textSize="14sp" />
-
-            <EditText
-                android:id="@+id/edtContent"
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:layout_margin="8dp"
-                android:gravity="top"
-                android:hint="Enter text..."
-                android:textSize="14sp" />
+                android:orientation="vertical"
+                android:weightSum="10">
+
+                <EditText
+                    android:id="@+id/edtContent"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:gravity="top"
+                    android:hint="Enter text..."
+                    android:textSize="14sp"
+                    android:layout_weight="10"/>
+
+                <com.google.android.material.appbar.AppBarLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@color/darkYellow">
+
+                    <!-- Toolbar cho thanh định dạng -->
+                    <com.google.android.material.appbar.MaterialToolbar
+                        android:id="@+id/formatting_toolbar"
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
+                        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+                        app:menu="@menu/menu_formatting_bar"
+                        android:layout_weight="1"
+                        android:visibility="visible"/>
+
+                </com.google.android.material.appbar.AppBarLayout>
+
+            </LinearLayout>
+
+
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

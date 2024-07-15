@@ -12,6 +12,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Select color"
+        android:textColor="@color/black"
         android:textStyle="bold"
         android:textSize="20sp"/>
 
@@ -19,8 +20,7 @@
         android:id="@+id/rcvColor"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        tools:listitem="@layout/item_color"/>
+        android:layout_marginTop="8dp" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/removeColorBtn"

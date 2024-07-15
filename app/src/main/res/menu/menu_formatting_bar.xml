@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item
+        android:id="@+id/bold"
+        android:title="Bold"
+        android:icon="@drawable/ic_bold"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/italic"
+        android:title="Italic"
+        android:icon="@drawable/ic_italic"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/underline"
+        android:title="Underline"
+        android:icon="@drawable/ic_underline"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/dash"
+        android:title="dash"
+        android:icon="@drawable/ic_dash"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/fill_color"
+        android:icon="@drawable/ic_fill_color"
+        android:title="Fill color"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/text_color"
+        android:icon="@drawable/ic_text_color"
+        android:title="Text color"
+        app:showAsAction="always"/>
+
+    <item
+        android:id="@+id/text_size"
+        android:icon="@drawable/ic_text_size"
+        android:title="Text size"
+        app:showAsAction="always"/>
+</menu>

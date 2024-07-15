@@ -5,10 +5,13 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
 import android.provider.OpenableColumns
+import android.text.SpannableString
+import android.text.style.ForegroundColorSpan
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
@@ -116,7 +119,11 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
         (activity as MainActivity).let { mainActivity ->
             val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
+            toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
             toolbar.setTitle("Notepad Free")
+            toolbar.overflowIcon?.setTint(Color.WHITE)
+
+
         }
     }
 
@@ -696,6 +703,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             val menuSearch = menu.findItem(R.id.search).actionView as SearchView
             menuSearch.isSubmitButtonEnabled = false
             menuSearch.setOnQueryTextListener(this)
+
+            val sort = SpannableString(menu.findItem(R.id.sort).title)
+            sort.setSpan(ForegroundColorSpan(Color.WHITE),0,sort.length,0)
+            menu.findItem(R.id.sort).title = sort
         }
     }
 

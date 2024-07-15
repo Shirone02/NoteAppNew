@@ -197,8 +197,6 @@ class ListNoteAdapter(
         val title = dialogView.findViewById<TextView>(R.id.trashTitle)
         val content = dialogView.findViewById<TextView>(R.id.trashContent)
         val actionRadioGroup = dialogView.findViewById<RadioGroup>(R.id.actionRadioGroup)
-        val radioUndelete = dialogView.findViewById<RadioButton>(R.id.rbUndelete)
-        val radioDelete = dialogView.findViewById<RadioButton>(R.id.rbDelete)
 
         title.text = differ.currentList[position].title
         content.text = differ.currentList[position].content

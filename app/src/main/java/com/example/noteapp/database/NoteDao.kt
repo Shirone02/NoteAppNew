@@ -63,4 +63,7 @@ interface NoteDao {
 
     @Query("SELECT MAX(id) FROM notes where isInTrash = 0")
     fun getLatestId(): Int
+
+    @Query("Select color from notes where id = :id")
+    fun getColor(id: Int): String
 }

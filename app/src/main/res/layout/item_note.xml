@@ -17,12 +17,12 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:background="@drawable/bg_item">
+            android:background="@drawable/bg_unselected_item">
 
             <TextView
                 android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
-                android:layout_height="30dp"
+                android:layout_height="20dp"
                 android:layout_marginStart="8dp"
                 android:gravity="center_vertical"
                 android:textSize="14sp"
@@ -34,7 +34,7 @@
             <TextView
                 android:id="@+id/tvCategory"
                 android:layout_width="match_parent"
-                android:layout_height="20dp"
+                android:layout_height="15dp"
                 android:text="category"
                 android:textSize="12sp"
                 android:textColor="@color/black"
@@ -43,7 +43,7 @@
             <TextView
                 android:id="@+id/tvTime"
                 android:layout_width="match_parent"
-                android:layout_height="20dp"
+                android:layout_height="15dp"
                 android:layout_marginEnd="8dp"
                 android:gravity="bottom|end"
                 android:textColor="@color/black"
