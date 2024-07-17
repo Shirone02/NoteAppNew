@@ -6,7 +6,7 @@
         android:id="@+id/bold"
         android:title="Bold"
         android:icon="@drawable/ic_bold"
-        app:showAsAction="always"/>
+        app:showAsAction="always" />
 
     <item
         android:id="@+id/italic"
@@ -21,7 +21,7 @@
         app:showAsAction="always"/>
 
     <item
-        android:id="@+id/dash"
+        android:id="@+id/strike_through"
         android:title="dash"
         android:icon="@drawable/ic_dash"
         app:showAsAction="always"/>

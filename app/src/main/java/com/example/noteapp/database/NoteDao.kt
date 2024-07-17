@@ -66,4 +66,7 @@ interface NoteDao {
 
     @Query("Select color from notes where id = :id")
     fun getColor(id: Int): String
+
+    @Query("select * from notes where id = :id")
+    fun getNoteById(id: Int): Note
 }

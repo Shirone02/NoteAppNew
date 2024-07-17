@@ -19,4 +19,5 @@ class NoteRepository(private val db: NoteDatabase) {
     fun searchNote(query: String) = db.getNoteDao().searchNote(query)
     fun getNotesWithCategories() = db.getNoteDao().getNotesWithCategories()
     fun getNotesByCategory(categoryId: Int) = db.getNoteDao().getNotesByCategory(categoryId)
+    fun getNotesById(id: Int) = db.getNoteDao().getNoteById(id)
 }

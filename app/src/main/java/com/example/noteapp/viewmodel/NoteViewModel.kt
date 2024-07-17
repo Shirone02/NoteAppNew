@@ -48,4 +48,6 @@ class NoteViewModel (app: Application, private val noteRepository: NoteRepositor
     fun getLatestId() = noteRepository.getLatestId()
 
     fun getColor(id: Int) = noteRepository.getColor(id)
+
+    fun getNoteById(id: Int) = noteRepository.getNotesById(id)
 }

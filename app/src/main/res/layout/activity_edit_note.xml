@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -11,39 +12,40 @@
         android:id="@+id/appBar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/brown"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:background="@color/brown">
+        app:layout_constraintTop_toTopOf="parent">
+
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:tint="@color/white"
+            app:menu="@menu/menu_edit_note"
             app:navigationIcon="@drawable/ic_back"
             app:navigationIconTint="@color/white"
             app:title="Notepad Free"
-            app:titleTextColor="@color/white"
-            app:menu="@menu/menu_edit_note"
-            android:tint="@color/white" />
+            app:titleTextColor="@color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/appBar"
         android:layout_margin="3dp"
         android:elevation="8dp"
-        app:cardCornerRadius="5dp">
+        app:cardCornerRadius="5dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/appBar">
 
         <LinearLayout
             android:id="@+id/edit_note"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical"
-            android:background="@drawable/bg_edit_note">
+            android:background="@drawable/bg_edit_note"
+            android:orientation="vertical">
 
             <EditText
                 android:id="@+id/edtTitle"
@@ -52,6 +54,7 @@
                 android:layout_margin="8dp"
                 android:hint="Enter title..."
                 android:textSize="14sp" />
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -63,32 +66,94 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="8dp"
+                    android:layout_weight="10"
                     android:gravity="top"
                     android:hint="Enter text..."
-                    android:textSize="14sp"
-                    android:layout_weight="10"/>
+                    android:textSize="14sp" />
 
-                <com.google.android.material.appbar.AppBarLayout
+<!--                <com.google.android.material.appbar.MaterialToolbar-->
+<!--                    android:id="@+id/formatting_toolbar"-->
+<!--                    android:layout_width="wrap_content"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:layout_weight="1"-->
+<!--                    android:popupTheme="@style/ThemeOverlay.AppCompat.Light"-->
+<!--                    android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"-->
+<!--                    android:visibility="visible"-->
+<!--                    app:menu="@menu/menu_formatting_bar" />-->
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:id="@+id/formatting_bar"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@color/darkYellow">
+                    android:layout_weight="1"
+                    android:layout_margin="3dp">
 
-                    <!-- Toolbar cho thanh định dạng -->
-                    <com.google.android.material.appbar.MaterialToolbar
-                        android:id="@+id/formatting_toolbar"
-                        android:layout_width="match_parent"
-                        android:layout_height="50dp"
-                        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-                        android:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-                        app:menu="@menu/menu_formatting_bar"
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="3dp"
                         android:layout_weight="1"
-                        android:visibility="visible"/>
+                        android:orientation="horizontal"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent">
 
-                </com.google.android.material.appbar.AppBarLayout>
+                        <ImageView
+                            android:id="@+id/bold"
+                            android:layout_width="30dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_bold" />
 
+                        <ImageView
+                            android:id="@+id/italic"
+                            android:layout_width="30dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_italic" />
+
+                        <ImageView
+                            android:id="@+id/underline"
+                            android:layout_width="30dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_underline" />
+
+                        <ImageView
+                            android:id="@+id/strike_through"
+                            android:layout_width="30dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_dash" />
+
+                        <ImageView
+                            android:id="@+id/fill_color"
+                            android:layout_width="30dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_fill_color" />
+
+                        <ImageView
+                            android:id="@+id/text_color"
+                            android:layout_width="30dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_text_color" />
+
+                        <ImageView
+                            android:id="@+id/text_size"
+                            android:layout_width="30dp"
+                            android:layout_height="36dp"
+                            android:src="@drawable/ic_text_size" />
+                    </LinearLayout>
+
+                    <ImageView
+                        android:id="@+id/exit_btn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/ic_exit"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"
+                        android:layout_marginRight="8dp"/>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
-
-
         </LinearLayout>
 
     </androidx.cardview.widget.CardView>

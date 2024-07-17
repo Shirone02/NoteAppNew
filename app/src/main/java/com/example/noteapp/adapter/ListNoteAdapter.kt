@@ -93,13 +93,10 @@ class ListNoteAdapter(
         }
 
         if (differ.currentList[position].color != null) {
-//            val layerDrawable = holder.noteLayout.background as LayerDrawable
-//            val backgroundDrawable = layerDrawable.getDrawable(1) as GradientDrawable
-//            backgroundDrawable.setColor(Color.parseColor(differ.currentList[position].color ?: "#FFFFFF"))
-
             val backgroundDrawable = GradientDrawable()
             backgroundDrawable.setColor(Color.parseColor(differ.currentList[position].color ?: "#FFFFFF"))
-            backgroundDrawable.setStroke(4, R.color.brown)
+            backgroundDrawable.setStroke(5, R.color.brown)
+
             holder.noteLayout.background = backgroundDrawable
         } else {
             holder.noteLayout.setBackgroundResource(R.drawable.bg_item)
