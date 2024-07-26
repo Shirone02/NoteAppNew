@@ -329,7 +329,6 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
             backgroundDrawable.setColor(Color.parseColor(color))
             backgroundDrawable.setStroke(4, R.color.brown)
             binding.editNote.background = backgroundDrawable
-            binding.appBar.background = backgroundDrawable
             binding.main.background = backgroundDrawable
         }
 
@@ -588,13 +587,11 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
         selectedColor.let { color ->
             if (selectedColor.isNullOrEmpty()) {
                 binding.editNote.setBackgroundResource(R.drawable.bg_edit_note)
-                binding.appBar.setBackgroundColor(R.color.brown)
             } else {
                 val backgroundDrawable = GradientDrawable()
                 backgroundDrawable.setColor(Color.parseColor(color ?: "#FFFFFF"))
                 backgroundDrawable.setStroke(4, R.color.brown)
                 binding.editNote.background = backgroundDrawable
-                binding.appBar.background = backgroundDrawable
             }
             val id = intent.getIntExtra("id", 0)
             val title = intent.getStringExtra("title")

@@ -22,6 +22,7 @@
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:tint="@color/white"
+            android:background="@color/brown"
             app:menu="@menu/menu_edit_note"
             app:navigationIcon="@drawable/ic_back"
             app:navigationIconTint="@color/white"
