@@ -598,10 +598,11 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
             val content = intent.getStringExtra("content")
             val created = intent.getStringExtra("created")
             val time = intent.getStringExtra("time")
+            val noteId = if (id ==0) noteViewModel.getLatestId() else id
 
             val note =
                 Note(
-                    id,
+                    noteId,
                     title.toString(),
                     content.toString(),
                     time.toString(),
@@ -764,26 +765,14 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
     private fun saveNote() {
         val id = intent.getIntExtra("id", 0)
         val created = intent.getStringExtra("created")
-        val color = noteViewModel.getColor(id)
+        val noteId = if (id == 0) noteViewModel.getLatestId() else id
+        val color = noteViewModel.getColor(noteId)
 
         val noteTitle = binding.edtTitle.text.toString()
         val noteContent = Html.toHtml(binding.edtContent.text)
-        if (id == 0) {
-            val note = Note(
-                noteViewModel.getLatestId(),
-                noteTitle,
-                noteContent,
-                getCurrentTime(),
-                created!!,
-                color,
-                false
-            )
-            noteViewModel.updateNote(note)
-        } else {
-            val note =
-                Note(id, noteTitle, noteContent, getCurrentTime(), created!!, color, false)
-            noteViewModel.updateNote(note)
-        }
+        val note =
+            Note(noteId, noteTitle, noteContent, getCurrentTime(), created!!, color, false)
+        noteViewModel.updateNote(note)
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
     }
 
