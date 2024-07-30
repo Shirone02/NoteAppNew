@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <style name="Theme.NoteApp.MySplash" parent="Theme.SplashScreen">
-        <item name="windowSplashScreenBackground">@color/black</item>
+        <item name="windowSplashScreenBackground">@color/white</item>
         <item name="windowSplashScreenAnimatedIcon">@drawable/ic_splashscreen</item>
         <item name="postSplashScreenTheme">@style/Theme.NoteApp</item>
         <item name="windowSplashScreenAnimationDuration">1500</item>

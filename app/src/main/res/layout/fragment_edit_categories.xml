@@ -37,6 +37,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/bg_add_btn"
                 android:text="ADD"
+                android:textColor="@color/black"
                 android:textSize="20dp" />
 
         </LinearLayout>
