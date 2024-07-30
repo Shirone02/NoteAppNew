@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.jetbrains.kotlin.android)
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.devtools.ksp)
 }
 
 android {
@@ -53,22 +53,19 @@ dependencies {
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 
-
-// ROOM
-    val roomVersion = "2.6.1"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
-
+    // Room
+    implementation(libs.room.runtime)
+    ksp(libs.room.complier)
     // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.1")
-    implementation("androidx.room:room-ktx:$roomVersion")
-
+    implementation(libs.kotlinx)
+    implementation(libs.room.ktx)
     // Life Cycle Arch
-    val lifecycleVersion = "2.6.2"
     // ViewModel
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
+    implementation(libs.lifecycle.viewmodel)
     // LiveData
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
+    implementation(libs.lifecycle.livedata)
     // Annotation processor
-    ksp("androidx.lifecycle:lifecycle-compiler:$lifecycleVersion")
+    ksp(libs.lifecycle.compiler)
+    // Splash Screen
+    implementation(libs.splashscreen)
 }

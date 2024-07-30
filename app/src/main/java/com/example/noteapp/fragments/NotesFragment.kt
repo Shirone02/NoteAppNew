@@ -58,7 +58,6 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-
 class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTextListener,
     OnColorClickListener {
 
