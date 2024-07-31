@@ -70,4 +70,12 @@ dependencies {
     ksp(libs.lifecycle.compiler)
     // Splash Screen
     implementation(libs.splashscreen)
+    // Firebase
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.analytics)
+    implementation(libs.firebase.database)
+    implementation(libs.firebase.firestore)
+    implementation(libs.firebase.storage)
+    implementation(libs.play.services.auth)
+
 }

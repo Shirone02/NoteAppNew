@@ -1,5 +1,6 @@
 [versions]
 agp = "8.5.0"
+firebaseBom = "33.1.2"
 kotlin = "1.9.0"
 ksp = "1.9.0-1.0.13"
 coreKtx = "1.13.1"
@@ -12,15 +13,21 @@ activity = "1.9.0"
 constraintlayout = "2.1.4"
 navigationUiKtx = "2.7.7"
 navigationFragmentKtx = "2.7.7"
+playServicesAuth = "21.2.0"
 room-version = "2.6.1"
 kotlinx-coroutines = "1.7.1"
 lifecycle-version = "2.6.2"
 splashscreen ="1.0.0"
 googleGmsGoogleServices = "4.4.2"
 firebaseAuth = "23.0.0"
+firebaseDatabase = "21.0.0"
+firebaseFirestore = "25.0.0"
+firebaseStorage = "21.0.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
+firebase-analytics = { module = "com.google.firebase:firebase-analytics" }
+firebase-bom = { module = "com.google.firebase:firebase-bom", version.ref = "firebaseBom" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }
 androidx-espresso-core = { group = "androidx.test.espresso", name = "espresso-core", version.ref = "espressoCore" }
@@ -30,6 +37,7 @@ androidx-activity = { group = "androidx.activity", name = "activity", version.re
 androidx-constraintlayout = { group = "androidx.constraintlayout", name = "constraintlayout", version.ref = "constraintlayout" }
 androidx-navigation-ui-ktx = { group = "androidx.navigation", name = "navigation-ui-ktx", version.ref = "navigationUiKtx" }
 androidx-navigation-fragment-ktx = { group = "androidx.navigation", name = "navigation-fragment-ktx", version.ref = "navigationFragmentKtx" }
+play-services-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "playServicesAuth" }
 room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room-version"}
 room-complier = { group = "androidx.room", name = "room-compiler", version.ref = "room-version"}
 room-ktx = { group = "androidx.room", name = "room-ktx", version.ref = "room-version"}
@@ -39,6 +47,9 @@ lifecycle-livedata = { group = "androidx.lifecycle", name = "lifecycle-livedata-
 lifecycle-compiler = { group = "androidx.lifecycle", name = "lifecycle-compiler", version.ref = "lifecycle-version"}
 splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "splashscreen"}
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth", version.ref = "firebaseAuth" }
+firebase-database = { group = "com.google.firebase", name = "firebase-database", version.ref = "firebaseDatabase" }
+firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
+firebase-storage = { group = "com.google.firebase", name = "firebase-storage", version.ref = "firebaseStorage" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

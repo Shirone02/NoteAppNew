@@ -1,14 +1,12 @@
 package com.example.noteapp.activities
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
+import android.widget.Toast
 import androidx.appcompat.app.ActionBarDrawerToggle
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.content.ContextCompat
-import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.core.view.GravityCompat
 import androidx.lifecycle.ViewModelProvider
 import com.example.noteapp.R
@@ -29,7 +27,13 @@ import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModelFactory
 import com.example.noteapp.viewmodel.NoteViewModel
 import com.example.noteapp.viewmodel.NoteViewModelFactory
+import com.google.android.gms.auth.api.signin.GoogleSignIn
+import com.google.android.gms.auth.api.signin.GoogleSignInClient
+import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.navigation.NavigationView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.ktx.auth
+import com.google.firebase.ktx.Firebase
 
 
 class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelectedListener {
@@ -41,17 +45,41 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     lateinit var noteViewModel: NoteViewModel
     lateinit var categoryViewModel: CategoryViewModel
     lateinit var noteCategoryViewModel: NoteCategoryViewModel
+    private lateinit var mGoogleSignInClient: GoogleSignInClient
+    private lateinit var mAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        installSplashScreen()
         setContentView(binding.root)
+
+        mAuth = FirebaseAuth.getInstance()
 
         setUpViewModel()
 
         updateCategoryList()
 
         setSupportActionBar(binding.topAppBar)
+
+        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+            .requestIdToken(getString(R.string.default_web_client_id))
+            .requestEmail()
+            .build()
+
+
+        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+        val auth = Firebase.auth
+        val user = auth.currentUser
+        if (user != null) {
+            val userName = user.displayName
+            Toast.makeText(this, "Welcome $userName", Toast.LENGTH_SHORT).show()
+        } else {
+            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show()
+        }
+
+//        val sign_out_button = findViewById<Button>(R.id.logout_button)
+//        sign_out_button.setOnClickListener {
+//            signOutAndStartSignInActivity()
+//        }
 
         val toggle = ActionBarDrawerToggle(
             this,
@@ -69,6 +97,16 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, NotesFragment()).commit()
             binding.navView.setCheckedItem(R.id.nav_note)
+        }
+    }
+
+    private fun signOutAndStartSignInActivity() {
+        mAuth.signOut()
+
+        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
+            val intent = Intent(this@MainActivity, SignInActivity::class.java)
+            startActivity(intent)
+            finish()
         }
     }
 
