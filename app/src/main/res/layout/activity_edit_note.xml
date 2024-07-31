@@ -54,6 +54,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="8dp"
                 android:hint="Enter title..."
+                android:textColor="@color/black"
                 android:textSize="14sp" />
 
             <LinearLayout
@@ -70,6 +71,7 @@
                     android:layout_weight="10"
                     android:gravity="top"
                     android:hint="Enter text..."
+                    android:textColor="@color/black"
                     android:textSize="14sp" />
 
 <!--                <com.google.android.material.appbar.MaterialToolbar-->

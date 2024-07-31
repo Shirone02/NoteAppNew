@@ -21,7 +21,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginLeft="8dp"
-        android:text="content"
+        android:text="Content"
         android:textSize="14sp"
         android:textColor="@color/black" />
 
@@ -51,12 +51,14 @@
             android:id="@+id/rbUndelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
             android:text="Undelete" />
 
         <RadioButton
             android:id="@+id/rbDelete"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textColor="@color/black"
             android:text="Delete"/>
 
     </RadioGroup>

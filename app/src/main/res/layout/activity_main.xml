@@ -29,6 +29,7 @@
                 android:layout_height="?attr/actionBarSize"
                 app:navigationIcon="@drawable/ic_option"
                 app:title="Notepad Free"
+                android:layout_marginTop="5dp"
                 app:menu="@menu/top_app_bar"
                 app:titleTextColor="@color/white"
                 app:navigationIconTint="@color/white"/>

@@ -12,7 +12,6 @@
         android:text="Notepad Free"
         android:textColor="@color/white"
         android:textSize="20sp"
-
         android:layout_marginStart="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
