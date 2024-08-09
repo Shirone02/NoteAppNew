@@ -60,6 +60,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         setSupportActionBar(binding.topAppBar)
 
+        // firebase authentication
         val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
             .requestIdToken(getString(R.string.default_web_client_id))
             .requestEmail()
@@ -67,8 +68,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
 
         mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-        val auth = Firebase.auth
-        val user = auth.currentUser
+        val mAuth = Firebase.auth
+        val user = mAuth.currentUser
         if (user != null) {
             val userName = user.displayName
             Toast.makeText(this, "Welcome $userName", Toast.LENGTH_SHORT).show()

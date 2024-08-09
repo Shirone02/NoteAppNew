@@ -52,6 +52,7 @@ import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModelFactory
 import com.example.noteapp.viewmodel.NoteViewModel
 import com.example.noteapp.viewmodel.NoteViewModelFactory
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -763,13 +764,13 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
         val noteContent = Html.toHtml(binding.edtContent.text)
         val note =
             Note(noteId, noteTitle, noteContent, getCurrentTime(), created!!, color, false)
-        noteViewModel.updateNote(note)
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
 
         val database = FirebaseDatabase.getInstance()
-        val myRef = database.getReference("notes")
+        val mAuth = FirebaseAuth.getInstance()
+        val user = mAuth.currentUser
+        val myRef = database.getReference("notes").child(user!!.uid)
         myRef.child(noteId.toString()).setValue(note)
-
     }
 
     //redo

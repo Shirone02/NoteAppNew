@@ -50,6 +50,7 @@ import com.example.noteapp.models.NoteCategoryCrossRef
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
@@ -69,6 +70,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private lateinit var database: FirebaseDatabase
+    private lateinit var mAuth: FirebaseAuth
 
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var noteCategoryViewModel: NoteCategoryViewModel
@@ -130,7 +132,15 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
         // firebase
         database = FirebaseDatabase.getInstance()
-        val myRef = database.getReference("notes")
+        val mAuth = FirebaseAuth.getInstance()
+
+        val myRef1 = database.getReference("Users").child(mAuth.currentUser!!.uid)
+        val userInfo = mutableMapOf<String, String>()
+        userInfo["Email"] = mAuth.currentUser!!.email ?: ""
+        userInfo["UserName"] = mAuth.currentUser!!.displayName ?: ""
+        myRef1.setValue(userInfo)
+
+        val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
         val list = ArrayList<Note>()
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -304,7 +314,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
         val builder: android.app.AlertDialog.Builder = android.app.AlertDialog.Builder(context)
         builder.setTitle("Select category")
-            .setPositiveButton("OK") { dialog, which ->
+            .setPositiveButton("OK") { dialog, _ ->
                 val selectedCategories = mutableListOf<Category>()
                 val unSelectedCategories = mutableListOf<Category>()
                 for (i in categories.indices) {

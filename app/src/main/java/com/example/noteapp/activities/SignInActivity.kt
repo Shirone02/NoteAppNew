@@ -19,15 +19,14 @@ class SignInActivity : AppCompatActivity() {
         private const val RC_SIGN_IN = 9001
     }
 
-    private lateinit var auth: FirebaseAuth
+    private lateinit var mAuth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContentView(R.layout.activity_sign_in)
-        auth = FirebaseAuth.getInstance()
-
-        val currentUser = auth.currentUser
+        mAuth = FirebaseAuth.getInstance()
+        val currentUser = mAuth.currentUser
 
         if (currentUser != null) {
             val intent = Intent(this, MainActivity::class.java)
@@ -68,10 +67,10 @@ class SignInActivity : AppCompatActivity() {
 
     private fun firebaseAuthWithGoogle(idToken: String) {
         val credential = GoogleAuthProvider.getCredential(idToken, null)
-        auth.signInWithCredential(credential)
+        mAuth.signInWithCredential(credential)
             .addOnCompleteListener(this) { task ->
                 if (task.isSuccessful) {
-                    val user = auth.currentUser
+                    val user = mAuth.currentUser
                     startActivity(Intent(this, MainActivity::class.java))
                     finish()
                 } else {
