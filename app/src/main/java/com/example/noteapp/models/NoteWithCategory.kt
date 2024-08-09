@@ -9,7 +9,11 @@ data class NoteWithCategory(
     @Relation(
         parentColumn = "id",
         entityColumn = "id",
-        associateBy = Junction(NoteCategoryCrossRef::class, parentColumn = "noteId", entityColumn = "categoryId")
+        associateBy = Junction(
+            NoteCategoryCrossRef::class,
+            parentColumn = "noteId",
+            entityColumn = "categoryId"
+        )
     )
     val categories: List<Category>
 )

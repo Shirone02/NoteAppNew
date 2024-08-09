@@ -52,10 +52,9 @@
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/llNewCategory"
-            tools:listitem="@layout/item_category"/>
+            tools:listitem="@layout/item_category" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
-
 
 
 </FrameLayout>

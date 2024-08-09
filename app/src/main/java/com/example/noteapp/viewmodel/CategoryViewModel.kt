@@ -7,7 +7,10 @@ import com.example.noteapp.models.Category
 import com.example.noteapp.repository.CategoryRepository
 import kotlinx.coroutines.launch
 
-class CategoryViewModel(application: Application, private val categoryRepository: CategoryRepository): AndroidViewModel(application) {
+class CategoryViewModel(
+    application: Application,
+    private val categoryRepository: CategoryRepository
+) : AndroidViewModel(application) {
     fun addCategory(category: Category) = viewModelScope.launch {
         categoryRepository.insertCategory(category)
     }
@@ -22,5 +25,5 @@ class CategoryViewModel(application: Application, private val categoryRepository
 
     fun getAllCategory() = categoryRepository.getAllCategory()
 
-     fun getCategoryNameById(id: Int) = categoryRepository.getCategoryNameById(id)
+    fun getCategoryNameById(id: Int) = categoryRepository.getCategoryNameById(id)
 }

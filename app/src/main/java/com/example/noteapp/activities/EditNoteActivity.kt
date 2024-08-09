@@ -4,10 +4,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.graphics.Color
-import android.graphics.Paint.Style
 import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
-import android.media.Image
 import android.os.Bundle
 import android.text.Editable
 import android.text.Html
@@ -15,8 +13,6 @@ import android.text.Spannable
 import android.text.SpannableString
 import android.text.SpannableStringBuilder
 import android.text.Spanned
-import android.text.SpannedString
-import android.text.TextUtils
 import android.text.TextWatcher
 import android.text.style.AbsoluteSizeSpan
 import android.text.style.BackgroundColorSpan
@@ -25,21 +21,14 @@ import android.text.style.StrikethroughSpan
 import android.text.style.StyleSpan
 import android.text.style.UnderlineSpan
 import android.util.Log
-import android.util.Size
-import android.view.MenuItem
-import android.view.View
-import android.view.View.OnLongClickListener
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.result.ActivityResult
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
-import androidx.appcompat.widget.AppCompatButton
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -63,11 +52,10 @@ import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModelFactory
 import com.example.noteapp.viewmodel.NoteViewModel
 import com.example.noteapp.viewmodel.NoteViewModelFactory
-import java.lang.reflect.Type
+import com.google.firebase.database.FirebaseDatabase
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
-import kotlin.math.log
 
 class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
 
@@ -324,7 +312,7 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
             noteViewModel.getNoteById(id).content
         }
 
-        if(color != null){
+        if (color != null) {
             val backgroundDrawable = GradientDrawable()
             backgroundDrawable.setColor(Color.parseColor(color))
             backgroundDrawable.setStroke(4, R.color.brown)
@@ -373,21 +361,24 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
 
         if (start < end) {
             val spannable = binding.edtContent.text as Spannable
-            val spans = spannable.getSpans(start, end,StyleSpan::class.java)
+            val spans = spannable.getSpans(start, end, StyleSpan::class.java)
 
-            val isAllFormatted = spans.size == 1 && spannable.getSpanStart(spans[0]) <= start && spannable.getSpanEnd(spans[0]) >= end
+            val isAllFormatted =
+                spans.size == 1 && spannable.getSpanStart(spans[0]) <= start && spannable.getSpanEnd(
+                    spans[0]
+                ) >= end
 
             spans.forEach { span ->
                 Log.d("span", "spans: $span")
             }
-                if(spans.isNotEmpty()){
-                    Log.d("span", "applyStyle: $isAllFormatted")
-                    Log.d("span", "size: ${spans.size}")
-                    Log.d("span", "start: ${spannable.getSpanStart(spans[0])}")
-                    Log.d("span", "end: ${spannable.getSpanEnd(spans[0])}")
-                }
+            if (spans.isNotEmpty()) {
+                Log.d("span", "applyStyle: $isAllFormatted")
+                Log.d("span", "size: ${spans.size}")
+                Log.d("span", "start: ${spannable.getSpanStart(spans[0])}")
+                Log.d("span", "end: ${spannable.getSpanEnd(spans[0])}")
+            }
 
-            if(isAllFormatted){
+            if (isAllFormatted) {
                 spannable.removeSpan(spans[0])
             } else {
                 spannable.setSpan(StyleSpan(style), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
@@ -598,7 +589,7 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
             val content = intent.getStringExtra("content")
             val created = intent.getStringExtra("created")
             val time = intent.getStringExtra("time")
-            val noteId = if (id ==0) noteViewModel.getLatestId() else id
+            val noteId = if (id == 0) noteViewModel.getLatestId() else id
 
             val note =
                 Note(
@@ -774,6 +765,11 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
             Note(noteId, noteTitle, noteContent, getCurrentTime(), created!!, color, false)
         noteViewModel.updateNote(note)
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
+
+        val database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("notes")
+        myRef.child(noteId.toString()).setValue(note)
+
     }
 
     //redo

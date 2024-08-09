@@ -38,7 +38,7 @@
                 android:text="category"
                 android:textSize="12sp"
                 android:textColor="@color/black"
-                android:layout_marginStart="8dp"/>
+                android:layout_marginStart="8dp" />
 
             <TextView
                 android:id="@+id/tvTime"
@@ -51,7 +51,6 @@
                 android:textSize="10sp"
                 android:textStyle="italic" />
         </LinearLayout>
-
 
 
     </androidx.cardview.widget.CardView>

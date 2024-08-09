@@ -1,7 +1,6 @@
 package com.example.noteapp.adapter
 
 import android.graphics.Color
-import android.media.Image
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,7 +9,10 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapp.R
 import com.example.noteapp.listeners.OnColorClickListener
 
-class ListColorAdapter(private val listColor: List<String>, private val onColorClickListener: OnColorClickListener) : RecyclerView.Adapter<ListColorAdapter.viewholder>() {
+class ListColorAdapter(
+    private val listColor: List<String>,
+    private val onColorClickListener: OnColorClickListener
+) : RecyclerView.Adapter<ListColorAdapter.viewholder>() {
 
     private var selectedPosition = -1
 
@@ -20,7 +22,8 @@ class ListColorAdapter(private val listColor: List<String>, private val onColorC
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): viewholder {
-        val itemView = LayoutInflater.from(parent.context).inflate(R.layout.item_color, parent, false)
+        val itemView =
+            LayoutInflater.from(parent.context).inflate(R.layout.item_color, parent, false)
         return viewholder(itemView)
     }
 
@@ -30,7 +33,7 @@ class ListColorAdapter(private val listColor: List<String>, private val onColorC
 
     override fun onBindViewHolder(holder: viewholder, position: Int) {
         holder.imgColor.setBackgroundColor(Color.parseColor(listColor[position]))
-        holder.checkmark.visibility = if(position == selectedPosition) View.VISIBLE else View.GONE
+        holder.checkmark.visibility = if (position == selectedPosition) View.VISIBLE else View.GONE
 
         holder.itemView.setOnClickListener {
             getSelectedPosition(position)
@@ -39,7 +42,7 @@ class ListColorAdapter(private val listColor: List<String>, private val onColorC
         }
     }
 
-    private fun getSelectedPosition(position: Int){
+    private fun getSelectedPosition(position: Int) {
         selectedPosition = position
     }
 }

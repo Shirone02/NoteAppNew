@@ -29,7 +29,7 @@ class ListCategoryAdapter(private val context: Context) :
 
     private lateinit var categoryViewModel: CategoryViewModel
 
-    private val differCallBack = object: DiffUtil.ItemCallback<Category>(){
+    private val differCallBack = object : DiffUtil.ItemCallback<Category>() {
         override fun areItemsTheSame(oldItem: Category, newItem: Category): Boolean {
             return oldItem.categoryName == newItem.categoryName
         }
@@ -59,18 +59,18 @@ class ListCategoryAdapter(private val context: Context) :
         }
 
         holder.deleteBtn.setOnClickListener {
-           showDeleteCategoryDialog(context, position)
+            showDeleteCategoryDialog(context, position)
         }
     }
 
     // hien thi hop thoai xoa category
-    private fun showDeleteCategoryDialog(context: Context, position: Int){
+    private fun showDeleteCategoryDialog(context: Context, position: Int) {
         val alertDialog = AlertDialog.Builder(context)
             .setMessage("Delete category '${differ.currentList[position].categoryName}'? Notes from the category won't be deleted.")
-            .setNegativeButton("Cancel"){dialog, _ ->
+            .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }
-            .setPositiveButton("OK"){dialog, _ ->
+            .setPositiveButton("OK") { dialog, _ ->
                 categoryViewModel.deleteCategory(differ.currentList[position])
                 notifyDataSetChanged()
                 dialog.dismiss()
@@ -87,11 +87,11 @@ class ListCategoryAdapter(private val context: Context) :
 
         val alertDialog = AlertDialog.Builder(context)
             .setView(dialogView)
-            .setNegativeButton("Cancel"){dialog,_ ->
+            .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
             }
 
-            .setPositiveButton("OK"){ dialog, _ ->
+            .setPositiveButton("OK") { dialog, _ ->
                 val inputText = editText.text.toString()
 
                 val newCategory = Category(differ.currentList[position].id, inputText)

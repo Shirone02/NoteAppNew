@@ -7,7 +7,6 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Update
-import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
 import com.example.noteapp.models.NoteWithCategory
 
@@ -16,22 +15,26 @@ interface NoteDao {
     @Query("select * from notes")
     fun getNotesWithCategories(): LiveData<List<NoteWithCategory>>
 
-    @Query("""
+    @Query(
+        """
         SELECT notes.* 
         FROM notes 
         LEFT JOIN note_category_cross_ref 
         ON notes.id = note_category_cross_ref.noteId 
         WHERE note_category_cross_ref.categoryId IS NULL and isInTrash = 0
-    """)
+    """
+    )
     fun getNotesWithoutCategory(): LiveData<List<Note>>
 
-    @Query("""
+    @Query(
+        """
         SELECT notes.* 
         FROM notes 
         LEFT JOIN note_category_cross_ref 
         ON notes.id = note_category_cross_ref.noteId 
         WHERE note_category_cross_ref.categoryId = :categoryId
-    """)
+    """
+    )
     fun getNotesByCategory(categoryId: Int): LiveData<List<Note>>
 
     @Query("select * from notes where isInTrash = 0 order by id desc ")

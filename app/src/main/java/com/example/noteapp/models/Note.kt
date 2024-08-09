@@ -9,15 +9,15 @@ import androidx.room.PrimaryKey
 @Entity(tableName = "notes")
 data class Note(
     @PrimaryKey(autoGenerate = true)
-    val id: Int,
+    val id: Int = 0,
     @ColumnInfo(name = "title")
-    val title: String,
+    val title: String = "",
     @ColumnInfo(name = "content")
-    val content: String,
+    val content: String = "",
     @ColumnInfo(name = "time")
-    val time: String,
+    val time: String = "",
     @ColumnInfo(name = "created")
-    val created: String,
+    val created: String = "",
     @ColumnInfo(name = "color")
     var color: String? = null,
     @ColumnInfo(name = "isInTrash")

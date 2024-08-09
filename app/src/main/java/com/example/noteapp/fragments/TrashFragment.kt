@@ -7,7 +7,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.provider.DocumentsContract
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -21,6 +20,7 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteapp.R
@@ -28,7 +28,6 @@ import com.example.noteapp.activities.MainActivity
 import com.example.noteapp.adapter.ListCategoryAdapter
 import com.example.noteapp.adapter.ListNoteAdapter
 import com.example.noteapp.databinding.FragmentTrashBinding
-import com.example.noteapp.fragments.NotesFragment.Companion
 import com.example.noteapp.listeners.OnItemClickListener
 import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
@@ -323,15 +322,15 @@ class TrashFragment : Fragment(R.layout.fragment_trash), MenuProvider {
     }
 
     //xoa cac note trong trash
-    private fun deleteInTrash(){
+    private fun deleteInTrash() {
         val selectedItem = noteAdapter.getSelectedItems()
         val selectedIds = selectedItem.map { it.id }
 
         val builder = AlertDialog.Builder(context)
             .setMessage("Are you sure that you want to delete the selected notes? The notes will be deleted permanently.")
-            .setNegativeButton("Cancel"){dialog, _ ->
+            .setNegativeButton("Cancel") { dialog, _ ->
                 dialog.dismiss()
-            }.setPositiveButton("OK"){dialog,_ ->
+            }.setPositiveButton("OK") { dialog, _ ->
                 noteViewModel.deleteNotes(selectedIds)
 
                 noteAdapter.clearSelection()

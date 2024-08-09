@@ -12,7 +12,6 @@ import android.provider.OpenableColumns
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -20,7 +19,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
-import androidx.appcompat.view.menu.MenuPopupHelper
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
@@ -28,6 +26,7 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteapp.R
@@ -125,7 +124,8 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
     private fun getCurrentTime(): String {
         val calendar = Calendar.getInstance()
 
-        val formattedDate = SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.getDefault()).format(calendar.time)
+        val formattedDate =
+            SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.getDefault()).format(calendar.time)
 
         return formattedDate
     }
@@ -138,8 +138,8 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
         builder.setTitle("Select category")
             .setPositiveButton("OK") { dialog, which ->
                 val selectedCategories = mutableListOf<Category>()
-                for(i in categories.indices){
-                    if(checkedItem[i]){
+                for (i in categories.indices) {
+                    if (checkedItem[i]) {
                         selectedCategories.add(categories[i])
                     }
                 }
@@ -148,14 +148,18 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
                 val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
                 val selectedNotes = noteAdapter.getSelectedItems()
 
-                for(noteId in selectedNotes.map { it.id }){
-                    for(categoryId in selectedCategories.map { it.id }){
+                for (noteId in selectedNotes.map { it.id }) {
+                    for (categoryId in selectedCategories.map { it.id }) {
                         noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
                     }
                 }
                 // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
                 noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
-                Toast.makeText(requireContext(), "Notes and categories linked successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Notes and categories linked successfully",
+                    Toast.LENGTH_SHORT
+                ).show()
 
                 //thay doi lai menu
                 isAlternateMenuVisible = !isAlternateMenuVisible
@@ -168,7 +172,10 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
             .setNegativeButton("Cancel") { dialog, which ->
                 dialog.dismiss()
             }
-            .setMultiChoiceItems(categories.map { it.categoryName }.toTypedArray(), checkedItem){ dialog, which, isChecked ->
+            .setMultiChoiceItems(
+                categories.map { it.categoryName }.toTypedArray(),
+                checkedItem
+            ) { dialog, which, isChecked ->
                 checkedItem[which] = isChecked
             }
         builder.create().show()
@@ -186,7 +193,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
                     startActivity(intent)
                 }
 
-                if(isAlternateMenuVisible){
+                if (isAlternateMenuVisible) {
                     updateSelectedCount()
                 }
             }
@@ -194,7 +201,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
             override fun onNoteLongClick(note: Note) {
                 isAlternateMenuVisible = true
                 requireActivity().invalidateOptionsMenu()
-                if(isAlternateMenuVisible){
+                if (isAlternateMenuVisible) {
                     changeBackNavigationIcon()
                     updateSelectedCount()
                 }
@@ -218,17 +225,17 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
         }
 
         activity?.let {
-            categoryViewModel.getAllCategory().observe(viewLifecycleOwner){category ->
+            categoryViewModel.getAllCategory().observe(viewLifecycleOwner) { category ->
                 categoryAdapter.differ.submitList(category)
                 categories = categoryAdapter.differ.currentList
             }
         }
     }
 
-    private fun updateSelectedCount(){
+    private fun updateSelectedCount() {
         (activity as MainActivity).let { mainActivity ->
             val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
-            if(isAlternateMenuVisible){
+            if (isAlternateMenuVisible) {
                 toolbar.setTitle(noteAdapter.getSelectedItemsCount().toString())
             } else {
                 toolbar.setTitle("Notepad Free")
@@ -294,7 +301,8 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
     }
 
     private fun showDeleteDialog() {
-        val builder: androidx.appcompat.app.AlertDialog.Builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        val builder: androidx.appcompat.app.AlertDialog.Builder =
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
 
         builder.setTitle("Delete")
             .setMessage("Do you want to delete?")
@@ -327,7 +335,8 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
         var selectedOption = 0
         val noteList = noteAdapter.differ.currentList
-        val builder: androidx.appcompat.app.AlertDialog.Builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        val builder: androidx.appcompat.app.AlertDialog.Builder =
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
         builder.setTitle("Sort by")
             .setPositiveButton("Sort") { dialog, which ->
                 when (selectedOption) {
@@ -410,14 +419,18 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
     //Export note ra file txt
     private fun exportNoteToTextFile(uri: Uri) {
         var selectedNotes = noteAdapter.getSelectedItems()
-        if(selectedNotes.isEmpty()){
+        if (selectedNotes.isEmpty()) {
             selectedNotes = noteAdapter.differ.currentList.toSet()
         }
         selectedNotes.forEach { note ->
             val fileName = "${note.title}.txt"
             createFile(uri, fileName, note.content)
         }
-        Toast.makeText(requireContext(), "${selectedNotes.size} note(s) exported", Toast.LENGTH_SHORT)
+        Toast.makeText(
+            requireContext(),
+            "${selectedNotes.size} note(s) exported",
+            Toast.LENGTH_SHORT
+        )
             .show()
     }
 
@@ -457,13 +470,13 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
         if (requestCode == READ_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
             val selectedFile = mutableListOf<Uri>()
 
-            data?.clipData?.let{ clipData ->
+            data?.clipData?.let { clipData ->
                 //neu nguoi dung chon nhieu tep
-                for(i in 0 until clipData.itemCount){
+                for (i in 0 until clipData.itemCount) {
                     val uri = clipData.getItemAt(i).uri
                     selectedFile.add(uri)
                 }
-            }?:run {
+            } ?: run {
                 // neu nguoi dung chi chon 1 tep
                 data?.data?.let { uri ->
                     Log.d("TAG", "onActivityResult: $uri")
@@ -478,8 +491,8 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
     }
 
     //ham xu ly tep
-    private fun handleSelectedFiles(uris: List<Uri>){
-        for(uri in uris){
+    private fun handleSelectedFiles(uris: List<Uri>) {
+        for (uri in uris) {
             val note = createNoteFromTextFile(uri)
             noteViewModel.addNote(note)
         }
@@ -496,15 +509,16 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
     }
 
     //lay ten tep
-    private fun getFileName(uri: Uri):String? {
+    private fun getFileName(uri: Uri): String? {
         val contentResolver = requireContext().contentResolver
         var fileTxtName: String? = null
 
-        val cursor = contentResolver.query(uri, null,null,null,null)
+        val cursor = contentResolver.query(uri, null, null, null, null)
         cursor?.use {
-            if(it.moveToFirst()){
+            if (it.moveToFirst()) {
                 val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
-                val fileName = if (displayNameIndex != -1) it.getString(displayNameIndex) else "Unknown"
+                val fileName =
+                    if (displayNameIndex != -1) it.getString(displayNameIndex) else "Unknown"
                 fileTxtName = fileName
             }
         }
@@ -551,7 +565,8 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
 
             } else {
                 R.menu.top_app_bar
-            }, menu)
+            }, menu
+        )
 
         if (!isAlternateMenuVisible) {
             val menuSearch = menu.findItem(R.id.search).actionView as SearchView
@@ -559,7 +574,7 @@ class UncategorizedFragment : Fragment(R.layout.fragment_uncategorized), MenuPro
             menuSearch.setOnQueryTextListener(this)
 
             val sort = SpannableString(menu.findItem(R.id.sort).title)
-            sort.setSpan(ForegroundColorSpan(Color.WHITE),0,sort.length,0)
+            sort.setSpan(ForegroundColorSpan(Color.WHITE), 0, sort.length, 0)
             menu.findItem(R.id.sort).title = sort
         }
     }

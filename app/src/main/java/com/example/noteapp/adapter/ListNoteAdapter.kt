@@ -4,13 +4,10 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Color
 import android.graphics.drawable.GradientDrawable
-import android.graphics.drawable.LayerDrawable
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.RadioButton
 import android.widget.RadioGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
@@ -94,7 +91,11 @@ class ListNoteAdapter(
 
         if (differ.currentList[position].color != null) {
             val backgroundDrawable = GradientDrawable()
-            backgroundDrawable.setColor(Color.parseColor(differ.currentList[position].color ?: "#FFFFFF"))
+            backgroundDrawable.setColor(
+                Color.parseColor(
+                    differ.currentList[position].color ?: "#FFFFFF"
+                )
+            )
             backgroundDrawable.setStroke(5, R.color.brown)
 
             holder.noteLayout.background = backgroundDrawable

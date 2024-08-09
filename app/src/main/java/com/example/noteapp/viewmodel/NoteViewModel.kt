@@ -3,12 +3,12 @@ package com.example.noteapp.viewmodel
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.noteapp.models.Note
 import com.example.noteapp.repository.NoteRepository
 import kotlinx.coroutines.launch
 
-class NoteViewModel (app: Application, private val noteRepository: NoteRepository): AndroidViewModel(app){
+class NoteViewModel(app: Application, private val noteRepository: NoteRepository) :
+    AndroidViewModel(app) {
     fun addNote(note: Note) = viewModelScope.launch {
         noteRepository.insertNote(note)
     }

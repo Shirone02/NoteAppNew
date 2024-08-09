@@ -16,6 +16,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         android:background="@color/brown">
+
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/topAppBar"
             android:layout_width="match_parent"
@@ -23,7 +24,7 @@
             app:navigationIcon="@drawable/ic_back"
             app:title="Backup"
             app:titleTextColor="@color/white"
-            app:navigationIconTint="@color/white"/>
+            app:navigationIconTint="@color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

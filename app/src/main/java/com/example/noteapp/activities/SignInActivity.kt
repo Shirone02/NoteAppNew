@@ -1,11 +1,10 @@
 package com.example.noteapp.activities
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.noteapp.R
@@ -19,6 +18,7 @@ class SignInActivity : AppCompatActivity() {
     companion object {
         private const val RC_SIGN_IN = 9001
     }
+
     private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {

@@ -10,5 +10,5 @@ class CategoryRepository(private val db: NoteDatabase) {
     suspend fun updateCategory(category: Category) = db.getCategoryDao().updateCategory(category)
 
     fun getAllCategory() = db.getCategoryDao().getAllCategories()
-     fun getCategoryNameById(id: Int) = db.getCategoryDao().getCategoryNameById(id)
+    fun getCategoryNameById(id: Int) = db.getCategoryDao().getCategoryNameById(id)
 }

@@ -6,8 +6,6 @@ import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
-import android.util.Log
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -22,6 +20,7 @@ import androidx.core.view.GravityCompat
 import androidx.core.view.MenuHost
 import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteapp.R
@@ -75,7 +74,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
         noteCategoryViewModel = (activity as MainActivity).noteCategoryViewModel
         uncategorizedView = view
 
-        categoryId = arguments?.getInt("categoryId")?:0
+        categoryId = arguments?.getInt("categoryId") ?: 0
 
         setUpNoteRecyclerView()
 
@@ -89,8 +88,8 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
         builder.setTitle("Select category")
             .setPositiveButton("OK") { dialog, which ->
                 val selectedCategories = mutableListOf<Category>()
-                for(i in categories.indices){
-                    if(checkedItem[i]){
+                for (i in categories.indices) {
+                    if (checkedItem[i]) {
                         selectedCategories.add(categories[i])
                     }
                 }
@@ -99,14 +98,18 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
                 val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
                 val selectedNotes = noteAdapter.getSelectedItems()
 
-                for(noteId in selectedNotes.map { it.id }){
-                    for(categoryId in selectedCategories.map { it.id }){
+                for (noteId in selectedNotes.map { it.id }) {
+                    for (categoryId in selectedCategories.map { it.id }) {
                         noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
                     }
                 }
                 // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
                 noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
-                Toast.makeText(requireContext(), "Notes and categories linked successfully", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    requireContext(),
+                    "Notes and categories linked successfully",
+                    Toast.LENGTH_SHORT
+                ).show()
 
                 //thay doi lai menu
                 isAlternateMenuVisible = !isAlternateMenuVisible
@@ -119,7 +122,10 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
             .setNegativeButton("Cancel") { dialog, which ->
                 dialog.dismiss()
             }
-            .setMultiChoiceItems(categories.map { it.categoryName }.toTypedArray(), checkedItem){ dialog, which, isChecked ->
+            .setMultiChoiceItems(
+                categories.map { it.categoryName }.toTypedArray(),
+                checkedItem
+            ) { dialog, which, isChecked ->
                 checkedItem[which] = isChecked
             }
         builder.create().show()
@@ -136,7 +142,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
                     startActivity(intent)
                 }
 
-                if(isAlternateMenuVisible){
+                if (isAlternateMenuVisible) {
                     updateSelectedCount()
                 }
             }
@@ -144,7 +150,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
             override fun onNoteLongClick(note: Note) {
                 isAlternateMenuVisible = true
                 requireActivity().invalidateOptionsMenu()
-                if(isAlternateMenuVisible) {
+                if (isAlternateMenuVisible) {
                     changeBackNavigationIcon()
                     updateSelectedCount()
                 }
@@ -166,17 +172,17 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
         }
 
         activity?.let {
-            categoryViewModel.getAllCategory().observe(viewLifecycleOwner){category ->
+            categoryViewModel.getAllCategory().observe(viewLifecycleOwner) { category ->
                 categoryAdapter.differ.submitList(category)
                 categories = categoryAdapter.differ.currentList
             }
         }
     }
 
-    private fun updateSelectedCount(){
+    private fun updateSelectedCount() {
         (activity as MainActivity).let { mainActivity ->
             val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
-            if(isAlternateMenuVisible){
+            if (isAlternateMenuVisible) {
                 toolbar.setTitle(noteAdapter.getSelectedItemsCount().toString())
             } else {
                 toolbar.setTitle("Notepad Free")
@@ -242,7 +248,8 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     }
 
     private fun showDeleteDialog() {
-        val builder: androidx.appcompat.app.AlertDialog.Builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        val builder: androidx.appcompat.app.AlertDialog.Builder =
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
 
         builder.setTitle("Delete")
             .setMessage("Do you want to delete?")
@@ -275,7 +282,8 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
 
         var selectedOption = 0
         val noteList = noteAdapter.differ.currentList
-        val builder: androidx.appcompat.app.AlertDialog.Builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        val builder: androidx.appcompat.app.AlertDialog.Builder =
+            androidx.appcompat.app.AlertDialog.Builder(requireContext())
         builder.setTitle("Sort by")
             .setPositiveButton("Sort") { dialog, which ->
                 when (selectedOption) {
@@ -340,7 +348,8 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
                 R.menu.menu_selection
             } else {
                 R.menu.top_app_bar
-            }, menu)
+            }, menu
+        )
 
         if (!isAlternateMenuVisible) {
             val menuSearch = menu.findItem(R.id.search).actionView as SearchView
@@ -348,7 +357,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
             menuSearch.setOnQueryTextListener(this)
 
             val sort = SpannableString(menu.findItem(R.id.sort).title)
-            sort.setSpan(ForegroundColorSpan(Color.WHITE),0,sort.length,0)
+            sort.setSpan(ForegroundColorSpan(Color.WHITE), 0, sort.length, 0)
             menu.findItem(R.id.sort).title = sort
         }
     }

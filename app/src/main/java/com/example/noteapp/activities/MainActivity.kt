@@ -76,11 +76,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show()
         }
 
-//        val sign_out_button = findViewById<Button>(R.id.logout_button)
-//        sign_out_button.setOnClickListener {
-//            signOutAndStartSignInActivity()
-//        }
-
         val toggle = ActionBarDrawerToggle(
             this,
             binding.drawerLayout,
@@ -195,6 +190,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
             R.id.fragment_edit_categories -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, EditCategoriesFragment()).commit()
+
+            R.id.nav_logout -> signOutAndStartSignInActivity()
         }
 
         binding.drawerLayout.closeDrawer(GravityCompat.START)

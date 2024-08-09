@@ -56,4 +56,10 @@
             android:icon="@drawable/ic_privacy_policy"
             android:title="Privacy policy" />
     </group>
+
+    <item
+        android:id="@+id/nav_logout"
+        android:icon="@drawable/ic_logout"
+        android:title="Logout" />
+
 </menu>

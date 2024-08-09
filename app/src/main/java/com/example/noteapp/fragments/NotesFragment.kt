@@ -20,7 +20,6 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
-import android.widget.ImageView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
@@ -51,6 +50,10 @@ import com.example.noteapp.models.NoteCategoryCrossRef
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
@@ -64,6 +67,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     private val binding: FragmentNotesBinding by lazy {
         FragmentNotesBinding.inflate(layoutInflater)
     }
+
+    private lateinit var database: FirebaseDatabase
 
     private lateinit var noteViewModel: NoteViewModel
     private lateinit var noteCategoryViewModel: NoteCategoryViewModel
@@ -121,9 +126,30 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             toolbar.navigationIcon?.setTint(ContextCompat.getColor(requireContext(), R.color.white))
             toolbar.setTitle("Notepad Free")
             toolbar.overflowIcon?.setTint(Color.WHITE)
-
-
         }
+
+        // firebase
+        database = FirebaseDatabase.getInstance()
+        val myRef = database.getReference("notes")
+        val list = ArrayList<Note>()
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    for (issue in snapshot.children) {
+                        list.add(issue.getValue(Note::class.java)!!)
+                    }
+                    if (list.isNotEmpty()) {
+                        binding.listNoteRecyclerView.layoutManager = GridLayoutManager(context, 1)
+                        noteAdapter.differ.submitList(list)
+                        binding.listNoteRecyclerView.adapter = noteAdapter
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
     }
 
     private fun addNote() {
@@ -178,20 +204,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.listNoteRecyclerView.adapter = noteAdapter
 
-        activity?.let {
-            noteViewModel.getAllNote().observe(viewLifecycleOwner) { note ->
-                noteAdapter.differ.submitList(note)
-                currentList = noteAdapter.differ.currentList
-                updateUI(note)
-            }
-        }
-
-        activity?.let {
-            categoryViewModel.getAllCategory().observe(viewLifecycleOwner) { category ->
-                categoryAdapter.differ.submitList(category)
-                categories = categoryAdapter.differ.currentList
-            }
-        }
+//        activity?.let {
+//            noteViewModel.getAllNote().observe(viewLifecycleOwner) { note ->
+//                noteAdapter.differ.submitList(note)
+//                currentList = noteAdapter.differ.currentList
+//                updateUI(note)
+//            }
+//        }
+//
+//        activity?.let {
+//            categoryViewModel.getAllCategory().observe(viewLifecycleOwner) { category ->
+//                categoryAdapter.differ.submitList(category)
+//                categories = categoryAdapter.differ.currentList
+//            }
+//        }
     }
 
     //hien thi so luong note duoc chon
@@ -704,7 +730,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             menuSearch.setOnQueryTextListener(this)
 
             val sort = SpannableString(menu.findItem(R.id.sort).title)
-            sort.setSpan(ForegroundColorSpan(Color.WHITE),0,sort.length,0)
+            sort.setSpan(ForegroundColorSpan(Color.WHITE), 0, sort.length, 0)
             menu.findItem(R.id.sort).title = sort
         }
     }
