@@ -58,6 +58,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
+
 class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
 
     private val binding: ActivityEditNoteBinding by lazy {
@@ -116,6 +117,8 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
 
         binding.topAppBar.setNavigationOnClickListener {
             saveNote()
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
             finish()
         }
 
@@ -769,7 +772,7 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
         val database = FirebaseDatabase.getInstance()
         val mAuth = FirebaseAuth.getInstance()
         val user = mAuth.currentUser
-        val myRef = database.getReference("notes").child(user!!.uid)
+        val myRef = database.getReference("notes")//.child(user!!.uid)
         myRef.child(noteId.toString()).setValue(note)
     }
 

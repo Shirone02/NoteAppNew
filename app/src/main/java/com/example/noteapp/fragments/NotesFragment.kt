@@ -119,9 +119,15 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         noteCategoryViewModel = (activity as MainActivity).noteCategoryViewModel
         noteView = view
 
+        // firebase
+        database = FirebaseDatabase.getInstance()
+        mAuth = FirebaseAuth.getInstance()
+
         setupNoteRecyclerView()
 
-        binding.addNoteFab.setOnClickListener { addNote() }
+        binding.addNoteFab.setOnClickListener {
+            addNote()
+        }
 
         (activity as MainActivity).let { mainActivity ->
             val toolbar = mainActivity.findViewById<Toolbar>(R.id.topAppBar)
@@ -130,20 +136,21 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             toolbar.overflowIcon?.setTint(Color.WHITE)
         }
 
-        // firebase
-        database = FirebaseDatabase.getInstance()
-        val mAuth = FirebaseAuth.getInstance()
 
-        val myRef1 = database.getReference("Users").child(mAuth.currentUser!!.uid)
-        val userInfo = mutableMapOf<String, String>()
-        userInfo["Email"] = mAuth.currentUser!!.email ?: ""
-        userInfo["UserName"] = mAuth.currentUser!!.displayName ?: ""
-        myRef1.setValue(userInfo)
+//        val myRef1 = database.getReference("Users").child(mAuth.currentUser!!.uid)
+//        val userInfo = mutableMapOf<String, String>()
+//        userInfo["Email"] = mAuth.currentUser!!.email ?: ""
+//        userInfo["UserName"] = mAuth.currentUser!!.displayName ?: ""
+//        myRef1.setValue(userInfo)
 
-        val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
+    }
+
+    private fun updateListNote(){
+        val myRef = database.getReference("notes")//.child(mAuth.currentUser!!.uid)
         val list = ArrayList<Note>()
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
+                list.clear()
                 if (snapshot.exists()) {
                     for (issue in snapshot.children) {
                         list.add(issue.getValue(Note::class.java)!!)
@@ -176,6 +183,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         startActivity(intent)
 
         Toast.makeText(requireContext(), "Add successful !!!", Toast.LENGTH_SHORT).show()
+        (context as MainActivity).finish()
     }
 
     //set up recycler View
@@ -213,6 +221,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         binding.listNoteRecyclerView.layoutManager =
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.listNoteRecyclerView.adapter = noteAdapter
+
+        updateListNote()
 
 //        activity?.let {
 //            noteViewModel.getAllNote().observe(viewLifecycleOwner) { note ->

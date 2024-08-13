@@ -61,21 +61,21 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         setSupportActionBar(binding.topAppBar)
 
         // firebase authentication
-        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-            .requestIdToken(getString(R.string.default_web_client_id))
-            .requestEmail()
-            .build()
-
-
-        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-        val mAuth = Firebase.auth
-        val user = mAuth.currentUser
-        if (user != null) {
-            val userName = user.displayName
-            Toast.makeText(this, "Welcome $userName", Toast.LENGTH_SHORT).show()
-        } else {
-            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show()
-        }
+//        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
+//            .requestIdToken(getString(R.string.default_web_client_id))
+//            .requestEmail()
+//            .build()
+//
+//
+//        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
+//        val mAuth = Firebase.auth
+//        val user = mAuth.currentUser
+//        if (user != null) {
+//            val userName = user.displayName
+//            Toast.makeText(this, "Welcome $userName", Toast.LENGTH_SHORT).show()
+//        } else {
+//            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show()
+//        }
 
         val toggle = ActionBarDrawerToggle(
             this,
