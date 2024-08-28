@@ -146,7 +146,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private fun updateListNote(){
-        val myRef = database.getReference("notes")//.child(mAuth.currentUser!!.uid)
+        val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
         val list = ArrayList<Note>()
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {

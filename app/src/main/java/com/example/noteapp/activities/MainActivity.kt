@@ -97,13 +97,17 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun signOutAndStartSignInActivity() {
-        mAuth.signOut()
+//        mAuth.signOut()
+//
+//        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
+//            val intent = Intent(this@MainActivity, SignInActivity::class.java)
+//            startActivity(intent)
+//            finish()
+//        }
 
-        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
-            val intent = Intent(this@MainActivity, SignInActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
+        FirebaseAuth.getInstance().signOut()
+        startActivity(Intent(this@MainActivity, SignInActivity::class.java))
+        finish()
     }
 
     private fun updateCategoryList() {

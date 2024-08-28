@@ -2,31 +2,46 @@ package com.example.noteapp.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.example.noteapp.R
+import com.example.noteapp.databinding.ActivitySignInBinding
 import com.google.android.gms.auth.api.signin.GoogleSignIn
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.ApiException
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.firebase.database.FirebaseDatabase
 
 class SignInActivity : AppCompatActivity() {
     companion object {
         private const val RC_SIGN_IN = 9001
     }
 
+    private val binding: ActivitySignInBinding by lazy {
+        ActivitySignInBinding.inflate(layoutInflater)
+    }
+
+    var valid = true
     private lateinit var mAuth: FirebaseAuth
+    private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         installSplashScreen()
-        setContentView(R.layout.activity_sign_in)
+        setContentView(binding.root)
         mAuth = FirebaseAuth.getInstance()
         val currentUser = mAuth.currentUser
+
+        setVariable()
+
+        binding.tvForgotPassword.setOnClickListener {
+            startActivity( Intent(this, ResetPasswordActivity::class.java))
+        }
 
         if (currentUser != null) {
             val intent = Intent(this, MainActivity::class.java)
@@ -38,6 +53,38 @@ class SignInActivity : AppCompatActivity() {
         signInButton.backgroundTintList = ContextCompat.getColorStateList(this, R.color.blue)
         signInButton.setOnClickListener {
             signIn()
+        }
+    }
+
+    private fun setVariable() {
+        binding.signIn.setOnClickListener{
+            if(valid){
+                val email = binding.userEdt.getText().toString()
+                val password = binding.passEdt.getText().toString()
+
+                if (email.isNotEmpty() && password.isNotEmpty()) {
+                    mAuth.signInWithEmailAndPassword(email, password).addOnCompleteListener(this@SignInActivity) { task ->
+                        if (task.isSuccessful) {
+                            val verification = mAuth.currentUser?.isEmailVerified
+                            if(verification == true){
+                                startActivity(Intent(applicationContext, MainActivity::class.java))
+                                finish()
+                            } else {
+                                Toast.makeText(this, "Vui lòng xác nhận email của bạn", Toast.LENGTH_SHORT).show()
+                            }
+                        } else {
+                            Toast.makeText(this@SignInActivity, "Tên đăng nhập hoặc mật khẩu không đúng", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                } else {
+                    Toast.makeText(this@SignInActivity, "Vui lòng điền email và mật khẩu", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+
+        binding.tvGotoRegister.setOnClickListener { v: View? ->
+            startActivity(Intent(this@SignInActivity, SignUpActivity::class.java))
+            finish()
         }
     }
 
