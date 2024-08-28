@@ -474,12 +474,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     //tim kiem
     private fun searchNote(query: String?) {
+        val searchList = ArrayList<Note>()
         if (query != null) {
             if (query.isEmpty()) {
-                noteAdapter.differ.submitList(currentList)
+                noteAdapter.differ.submitList(null)
+                noteAdapter.differ.submitList(list)
             } else {
-                noteViewModel.searchNote("%$query%").observe(this) { notes ->
-                    noteAdapter.differ.submitList(notes)
+                for (it in list) {
+                    if (it.title.toLowerCase().contains(query.toLowerCase())) {
+                        searchList.add(it)
+                    }
+                    binding.listNoteRecyclerView.layoutManager = GridLayoutManager(context, 1)
+                    noteAdapter.differ.submitList(null)
+                    noteAdapter.differ.submitList(searchList)
+                    binding.listNoteRecyclerView.adapter = noteAdapter
                 }
             }
         }
@@ -800,7 +808,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     override fun onQueryTextChange(newText: String?): Boolean {
         if (newText.isNullOrEmpty()) {
-            noteAdapter.differ.submitList(currentList)
+            noteAdapter.differ.submitList(null)
+            noteAdapter.differ.submitList(list)
         } else {
             searchNote(newText)
         }
