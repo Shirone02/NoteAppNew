@@ -60,23 +60,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 
         setSupportActionBar(binding.topAppBar)
 
-        // firebase authentication
-//        val gso = GoogleSignInOptions.Builder(GoogleSignInOptions.DEFAULT_SIGN_IN)
-//            .requestIdToken(getString(R.string.default_web_client_id))
-//            .requestEmail()
-//            .build()
-//
-//
-//        mGoogleSignInClient = GoogleSignIn.getClient(this, gso)
-//        val mAuth = Firebase.auth
-//        val user = mAuth.currentUser
-//        if (user != null) {
-//            val userName = user.displayName
-//            Toast.makeText(this, "Welcome $userName", Toast.LENGTH_SHORT).show()
-//        } else {
-//            Toast.makeText(this, "User not found", Toast.LENGTH_SHORT).show()
-//        }
-
         val toggle = ActionBarDrawerToggle(
             this,
             binding.drawerLayout,
@@ -97,14 +80,6 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun signOutAndStartSignInActivity() {
-//        mAuth.signOut()
-//
-//        mGoogleSignInClient.signOut().addOnCompleteListener(this) {
-//            val intent = Intent(this@MainActivity, SignInActivity::class.java)
-//            startActivity(intent)
-//            finish()
-//        }
-
         FirebaseAuth.getInstance().signOut()
         startActivity(Intent(this@MainActivity, SignInActivity::class.java))
         finish()
@@ -177,18 +152,18 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             R.id.nav_edit_categories -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, EditCategoriesFragment()).commit()
 
-            R.id.nav_backup -> startActivity(Intent(this, BackupActivity::class.java))
+//            R.id.nav_backup -> startActivity(Intent(this, BackupActivity::class.java))
+//
+//            R.id.nav_trash -> supportFragmentManager.beginTransaction()
+//                .replace(R.id.fragment_container, TrashFragment()).commit()
 
-            R.id.nav_trash -> supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, TrashFragment()).commit()
-
-            R.id.nav_setting -> startActivity(Intent(this, SettingsActivity::class.java))
-
-            R.id.nav_rate -> false
-
-            R.id.nav_help -> startActivity(Intent(this, HelpActivity::class.java))
-
-            R.id.nav_policy -> startActivity(Intent(this, PrivacyPolicyActivity::class.java))
+//            R.id.nav_setting -> startActivity(Intent(this, SettingsActivity::class.java))
+//
+//            R.id.nav_rate -> false
+//
+//            R.id.nav_help -> startActivity(Intent(this, HelpActivity::class.java))
+//
+//            R.id.nav_policy -> startActivity(Intent(this, PrivacyPolicyActivity::class.java))
 
             R.id.fragment_uncategorized -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, UncategorizedFragment()).commit()

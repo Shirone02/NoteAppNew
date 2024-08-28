@@ -154,10 +154,10 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
                     true
                 }
 
-                R.id.Share -> {
-                    shareNote()
-                    true
-                }
+//                R.id.Share -> {
+//                    shareNote()
+//                    false
+//                }
 
                 R.id.export_text_a_file -> {
                     exportNoteToTextFile()
@@ -169,9 +169,9 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
                     true
                 }
 
-                R.id.search_note -> {
-                    true
-                }
+//                R.id.search_note -> {
+//                    false
+//                }
 
                 R.id.categorize_note -> {
                     showCategorizeDialog()
@@ -183,22 +183,22 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
                     true
                 }
 
-                R.id.switch_to_read_mode -> {
-                    false
-                }
-
-                R.id.print -> {
-                    false
-                }
-
-                R.id.show_formatting_bar -> {
-                    false
-                }
-
-                R.id.showInfo -> {
-                    showInfoDialog()
-                    true
-                }
+//                R.id.switch_to_read_mode -> {
+//                    false
+//                }
+//
+//                R.id.print -> {
+//                    false
+//                }
+//
+//                R.id.show_formatting_bar -> {
+//                    false
+//                }
+//
+//                R.id.showInfo -> {
+//                    showInfoDialog()
+//                    true
+//                }
 
                 else -> {
                     false
@@ -313,7 +313,7 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
         val content: String = if (id == 0) {
             intent.getStringExtra("content").toString()
         } else {
-            noteViewModel.getNoteById(id).content
+            intent.getStringExtra("content").toString()
         }
 
         if (color != null) {
@@ -760,20 +760,20 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
     private fun saveNote() {
         val id = intent.getIntExtra("id", 0)
         val created = intent.getStringExtra("created")
-        val noteId = if (id == 0) noteViewModel.getLatestId() else id
-        val color = noteViewModel.getColor(noteId)
+        //chinh
+        val color = intent.getStringExtra("color")
 
         val noteTitle = binding.edtTitle.text.toString()
         val noteContent = Html.toHtml(binding.edtContent.text)
         val note =
-            Note(noteId, noteTitle, noteContent, getCurrentTime(), created!!, color, false)
+            Note(id, noteTitle, noteContent, getCurrentTime(), created!!, color, false)
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
 
         val database = FirebaseDatabase.getInstance()
         val mAuth = FirebaseAuth.getInstance()
         val user = mAuth.currentUser
-        val myRef = database.getReference("notes")//.child(user!!.uid)
-        myRef.child(noteId.toString()).setValue(note)
+        val myRef = database.getReference("notes").child(user!!.uid)
+        myRef.child(id.toString()).setValue(note)
     }
 
     //redo

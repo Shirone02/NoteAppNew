@@ -35,25 +35,23 @@ class SignInActivity : AppCompatActivity() {
         installSplashScreen()
         setContentView(binding.root)
         mAuth = FirebaseAuth.getInstance()
-        val currentUser = mAuth.currentUser
-
         setVariable()
 
         binding.tvForgotPassword.setOnClickListener {
             startActivity( Intent(this, ResetPasswordActivity::class.java))
         }
+//
+//        if (currentUser != null) {
+//            val intent = Intent(this, MainActivity::class.java)
+//            startActivity(intent)
+//            finish()
+//        }
 
-        if (currentUser != null) {
-            val intent = Intent(this, MainActivity::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        val signInButton = findViewById<Button>(R.id.signInButton)
-        signInButton.backgroundTintList = ContextCompat.getColorStateList(this, R.color.blue)
-        signInButton.setOnClickListener {
-            signIn()
-        }
+//        val signInButton = findViewById<Button>(R.id.signInButton)
+//        signInButton.backgroundTintList = ContextCompat.getColorStateList(this, R.color.blue)
+//        signInButton.setOnClickListener {
+//            signIn()
+//        }
     }
 
     private fun setVariable() {
@@ -100,16 +98,16 @@ class SignInActivity : AppCompatActivity() {
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == RC_SIGN_IN) {
-            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
-            try {
-                val account = task.getResult(ApiException::class.java)
-                firebaseAuthWithGoogle(account.idToken!!)
-            } catch (e: ApiException) {
-
-            }
-        }
+//
+//        if (requestCode == RC_SIGN_IN) {
+//            val task = GoogleSignIn.getSignedInAccountFromIntent(data)
+//            try {
+//                val account = task.getResult(ApiException::class.java)
+//                firebaseAuthWithGoogle(account.idToken!!)
+//            } catch (e: ApiException) {
+//
+//            }
+//        }
     }
 
     private fun firebaseAuthWithGoogle(idToken: String) {

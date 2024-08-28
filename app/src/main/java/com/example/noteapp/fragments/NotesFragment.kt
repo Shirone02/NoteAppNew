@@ -81,6 +81,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     private lateinit var colorAdapter: ListColorAdapter
 
     private lateinit var currentList: List<Note>
+    val list = ArrayList<Note>()
+    private var sortedList = mutableListOf<Note>()
 
     private lateinit var noteView: View
     private var isAlternateMenuVisible: Boolean = false
@@ -136,30 +138,22 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             toolbar.overflowIcon?.setTint(Color.WHITE)
         }
 
-
-//        val myRef1 = database.getReference("Users").child(mAuth.currentUser!!.uid)
-//        val userInfo = mutableMapOf<String, String>()
-//        userInfo["Email"] = mAuth.currentUser!!.email ?: ""
-//        userInfo["UserName"] = mAuth.currentUser!!.displayName ?: ""
-//        myRef1.setValue(userInfo)
-
     }
 
     private fun updateListNote(){
         val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
-        val list = ArrayList<Note>()
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 list.clear()
                 if (snapshot.exists()) {
                     for (issue in snapshot.children) {
+                        if (issue.getValue(Note::class.java)!!.color.isNullOrEmpty()) {
+                            issue.getValue(Note::class.java)!!.color = null
+                        }
                         list.add(issue.getValue(Note::class.java)!!)
                     }
-                    if (list.isNotEmpty()) {
-                        binding.listNoteRecyclerView.layoutManager = GridLayoutManager(context, 1)
-                        noteAdapter.differ.submitList(list)
-                        binding.listNoteRecyclerView.adapter = noteAdapter
-                    }
+                    sortedList = list.toMutableList()
+                    updateRecyclerView()
                 }
             }
 
@@ -170,8 +164,10 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private fun addNote() {
-        val note = Note(0, "", "", getCurrentTime(), getCurrentTime(), null, false)
-        noteViewModel.addNote(note)
+        val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
+        val note = Note(list.size+1, "", "", getCurrentTime(), getCurrentTime(), null, false)
+//        noteViewModel.addNote(note)
+        myRef.child((list.size+1).toString()).setValue(note)
 
         val intent = Intent(requireContext(), EditNoteActivity::class.java)
         intent.putExtra("id", note.id)
@@ -414,6 +410,15 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         noteAdapter.clearSelection()
     }
 
+    private fun updateRecyclerView() {
+        if (sortedList.isNotEmpty()) {
+            binding.listNoteRecyclerView.layoutManager = GridLayoutManager(context, 1)
+            noteAdapter.differ.submitList(null)
+            noteAdapter.differ.submitList(sortedList)
+            binding.listNoteRecyclerView.adapter = noteAdapter
+        }
+    }
+
     //hien thi lua chon sap xep
     private fun showOptionDialog() {
         val sortOption = arrayOf(
@@ -421,25 +426,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             "edit date: from oldest",
             "title: A to Z",
             "title: Z to A",
-            "creation date: from newest",
-            "creation date: from oldest",
-            "color: in order as shown on color palette"
         )
 
         var selectedOption = 0
-        val noteList = noteAdapter.differ.currentList
 
         val builder: AlertDialog.Builder = AlertDialog.Builder(requireContext())
         builder.setTitle("Sort by")
             .setPositiveButton("Sort") { dialog, which ->
                 when (selectedOption) {
-                    0 -> sortByEditDateNewest(noteList)
-                    1 -> sortByEditDateOldest(noteList)
-                    2 -> sortByTitleAToZ(noteList)
-                    3 -> sortByTitleZToA(noteList)
-                    4 -> sortByCreationDateNewest(noteList)
-                    5 -> sortByCreationDateOldest(noteList)
+                    0 -> sortByEditDateNewest()
+                    1 -> sortByEditDateOldest()
+                    2 -> sortByTitleAToZ()
+                    3 -> sortByTitleZToA()
                 }
+                updateRecyclerView()
             }
             .setNegativeButton("Cancel") { dialog, which ->
                 dialog.dismiss()
@@ -456,28 +456,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         builder.create().show()
     }
 
-    private fun sortByCreationDateOldest(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedBy { it.id })
+    private fun sortByTitleZToA() {
+        sortedList = list.sortedByDescending { it.title }.toMutableList()
     }
 
-    private fun sortByCreationDateNewest(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedByDescending { it.id })
+    private fun sortByTitleAToZ() {
+        sortedList = list.sortedBy { it.title }.toMutableList()
     }
 
-    private fun sortByTitleZToA(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedByDescending { it.title })
+    private fun sortByEditDateOldest() {
+        sortedList = list.sortedBy { it.time }.toMutableList()
     }
 
-    private fun sortByTitleAToZ(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedBy { it.title })
-    }
-
-    private fun sortByEditDateOldest(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedBy { it.time })
-    }
-
-    private fun sortByEditDateNewest(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedByDescending { it.time })
+    private fun sortByEditDateNewest() {
+        sortedList = list.sortedByDescending { it.time }.toMutableList()
     }
 
     //tim kiem

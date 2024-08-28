@@ -19,9 +19,9 @@
         android:title="Undo all"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/Share"
-        android:title="Share"
-        app:showAsAction="never" />
+<!--    <item android:id="@+id/Share"-->
+<!--        android:title="Share"-->
+<!--        app:showAsAction="never" />-->
 
     <item android:id="@+id/export_text_a_file"
         android:title="Export text a file"
@@ -31,10 +31,10 @@
         android:title="Delete"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/search_note"
-        android:title="Search"
-        app:actionViewClass="androidx.appcompat.widget.SearchView"
-        app:showAsAction="never"/>
+<!--    <item android:id="@+id/search_note"-->
+<!--        android:title="Search"-->
+<!--        app:actionViewClass="androidx.appcompat.widget.SearchView"-->
+<!--        app:showAsAction="never"/>-->
 
     <item android:id="@+id/categorize_note"
         android:title="Categorize"/>
@@ -43,19 +43,19 @@
         android:title="Colorize"
         app:showAsAction="never"/>
 
-    <item android:id="@+id/switch_to_read_mode"
-        android:title="Switch to read mode"
-        app:showAsAction="never"/>
+<!--    <item android:id="@+id/switch_to_read_mode"-->
+<!--        android:title="Switch to read mode"-->
+<!--        app:showAsAction="never"/>-->
 
-    <item android:id="@+id/print"
-        android:title="Print"
-        app:showAsAction="never"/>
+<!--    <item android:id="@+id/print"-->
+<!--        android:title="Print"-->
+<!--        app:showAsAction="never"/>-->
 
-    <item android:id="@+id/show_formatting_bar"
-        android:title="Show formatting bar"
-        app:showAsAction="never"/>
+<!--    <item android:id="@+id/show_formatting_bar"-->
+<!--        android:title="Show formatting bar"-->
+<!--        app:showAsAction="never"/>-->
 
-    <item android:id="@+id/showInfo"
-        android:title="Show info"
-        app:showAsAction="never"/>
+<!--    <item android:id="@+id/showInfo"-->
+<!--        android:title="Show info"-->
+<!--        app:showAsAction="never"/>-->
 </menu>

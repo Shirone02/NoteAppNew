@@ -24,37 +24,37 @@
     </item>
 
     <group android:id="@+id/group3">
-        <item
-            android:id="@+id/nav_backup"
-            android:icon="@drawable/ic_backup"
-            android:title="Backup" />
+<!--        <item-->
+<!--            android:id="@+id/nav_backup"-->
+<!--            android:icon="@drawable/ic_backup"-->
+<!--            android:title="Backup" />-->
 
-        <item
-            android:id="@+id/nav_trash"
-            android:icon="@drawable/ic_trash"
-            android:title="Trash" />
+<!--        <item-->
+<!--            android:id="@+id/nav_trash"-->
+<!--            android:icon="@drawable/ic_trash"-->
+<!--            android:title="Trash" />-->
     </group>
 
     <group android:id="@+id/group4">
-        <item
-            android:id="@+id/nav_setting"
-            android:icon="@drawable/ic_setting"
-            android:title="Settings" />
+<!--        <item-->
+<!--            android:id="@+id/nav_setting"-->
+<!--            android:icon="@drawable/ic_setting"-->
+<!--            android:title="Settings" />-->
 
-        <item
-            android:id="@+id/nav_rate"
-            android:icon="@drawable/ic_rate"
-            android:title="Rate the app" />
+<!--        <item-->
+<!--            android:id="@+id/nav_rate"-->
+<!--            android:icon="@drawable/ic_rate"-->
+<!--            android:title="Rate the app" />-->
 
-        <item
-            android:id="@+id/nav_help"
-            android:icon="@drawable/ic_help"
-            android:title="Help" />
+<!--        <item-->
+<!--            android:id="@+id/nav_help"-->
+<!--            android:icon="@drawable/ic_help"-->
+<!--            android:title="Help" />-->
 
-        <item
-            android:id="@+id/nav_policy"
-            android:icon="@drawable/ic_privacy_policy"
-            android:title="Privacy policy" />
+<!--        <item-->
+<!--            android:id="@+id/nav_policy"-->
+<!--            android:icon="@drawable/ic_privacy_policy"-->
+<!--            android:title="Privacy policy" />-->
     </group>
 
     <item
