@@ -147,6 +147,7 @@ class ListNoteAdapter(
         val newList = differ.currentList.toMutableList().apply {
             removeAll(selectedItems)
         }
+        differ.submitList(null)
         differ.submitList(newList)
         selectedItems.clear()
     }
