@@ -657,7 +657,10 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
                         null,
                         false
                     )
-                noteViewModel.deleteNote(note)
+                val database = FirebaseDatabase.getInstance()
+                val mAuth = FirebaseAuth.getInstance()
+                val noteRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
+                noteRef.child(id.toString()).removeValue()
                 finish()
                 dialog.dismiss()
             }

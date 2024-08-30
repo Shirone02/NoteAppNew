@@ -80,9 +80,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     private lateinit var categoryAdapter: ListCategoryAdapter
     private lateinit var colorAdapter: ListColorAdapter
 
-    private lateinit var currentList: List<Note>
     val list = ArrayList<Note>()
-    var lastestId = 1
+    var lastId = 1
     private var sortedList = mutableListOf<Note>()
 
     private lateinit var noteView: View
@@ -147,7 +146,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             override fun onDataChange(snapshot: DataSnapshot) {
                 list.clear()
                 if (snapshot.exists()) {
-                    lastestId = snapshot.children.last().key?.toIntOrNull() ?: 0
+                    lastId = snapshot.children.last().key?.toIntOrNull() ?: 0
                     for (issue in snapshot.children) {
                         if (issue.getValue(Note::class.java)!!.color.isNullOrEmpty()) {
                             issue.getValue(Note::class.java)!!.color = null
@@ -166,7 +165,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private fun addNote() {
-        val newId = if (lastestId == 0) 1 else lastestId + 1
+        val newId = if (lastId == 0) 1 else lastId + 1
         val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
         val note = Note(newId, "", "", getCurrentTime(), getCurrentTime(), null, false)
         myRef.child((newId).toString()).setValue(note)
@@ -401,9 +400,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     //xoa note
     private fun deleteSelectedItem() {
         val selectedNotes = noteAdapter.getSelectedItems()
-        Log.d("deleteNote: ", "$selectedNotes")
         val selectedIds = selectedNotes.map { it.id }
-        Log.d("deleteNoteID: ", "$selectedIds")
 
         val noteRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
         selectedIds.forEach { id ->
