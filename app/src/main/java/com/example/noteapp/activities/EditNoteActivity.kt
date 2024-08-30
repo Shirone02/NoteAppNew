@@ -78,6 +78,7 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
     private lateinit var categories: List<Category>
 
     private var isUndo = false
+    private var colorNote: String ?= null
     private var selectedColor: String? = null
     private var selectedFormatTextColor: String? = null
     private var selectedTextSize: Int = 18
@@ -117,6 +118,7 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
 
         binding.topAppBar.setNavigationOnClickListener {
             saveNote()
+            colorNote = null
             val intent = Intent(this, MainActivity::class.java)
             startActivity(intent)
             finish()
@@ -169,9 +171,6 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
                     true
                 }
 
-//                R.id.search_note -> {
-//                    false
-//                }
 
                 R.id.categorize_note -> {
                     showCategorizeDialog()
@@ -182,23 +181,6 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
                     showColorPickerDialog()
                     true
                 }
-
-//                R.id.switch_to_read_mode -> {
-//                    false
-//                }
-//
-//                R.id.print -> {
-//                    false
-//                }
-//
-//                R.id.show_formatting_bar -> {
-//                    false
-//                }
-//
-//                R.id.showInfo -> {
-//                    showInfoDialog()
-//                    true
-//                }
 
                 else -> {
                     false
@@ -606,6 +588,9 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
                     false
                 )
             Log.d("TAG", "handleOkButtonClick: $note")
+            if (color != null) {
+                colorNote = color
+            }
             noteViewModel.updateNote(note)
         }
 
@@ -761,7 +746,8 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
         val id = intent.getIntExtra("id", 0)
         val created = intent.getStringExtra("created")
         //chinh
-        val color = intent.getStringExtra("color")
+
+        val color = if (colorNote.isNullOrEmpty()) intent.getStringExtra("color") else colorNote
 
         val noteTitle = binding.edtTitle.text.toString()
         val noteContent = Html.toHtml(binding.edtContent.text)

@@ -714,19 +714,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     @SuppressLint("NotifyDataSetChanged")
     private fun handleOkButtonClick() {
         val selectedNotes = noteAdapter.getSelectedItems()
+        val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
 
         selectedColor.let { color ->
             if (selectedColor.isNullOrEmpty()) {
                 selectedNotes.forEach { note ->
                     note.color = color
                     Log.d("TAG", "handleOkButtonClick: ${note.color}")
-                    noteViewModel.updateNote(note)
+                    myRef.child((note.id).toString()).setValue(note)
                 }
             } else {
                 selectedNotes.forEach { note ->
                     note.color = color
                     Log.d("TAG", "handleOkButtonClick: ${note.color}")
-                    noteViewModel.updateNote(note)
+                    myRef.child((note.id).toString()).setValue(note)
                 }
             }
         }
