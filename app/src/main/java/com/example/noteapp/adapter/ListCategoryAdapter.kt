@@ -94,9 +94,9 @@ class ListCategoryAdapter(private val context: Context) :
             .setPositiveButton("OK") { dialog, _ ->
                 val inputText = editText.text.toString()
 
-                val newCategory = Category(differ.currentList[position].id, inputText)
-                categoryViewModel.updateCategory(newCategory)
-                notifyDataSetChanged()
+                //val newCategory = Category(differ.currentList[position].id, inputText)
+                //categoryViewModel.updateCategory(newCategory)
+                //notifyDataSetChanged()
                 dialog.dismiss()
             }.create()
 

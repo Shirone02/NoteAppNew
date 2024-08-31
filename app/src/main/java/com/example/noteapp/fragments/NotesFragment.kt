@@ -84,7 +84,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     private lateinit var noteView: View
     private var isAlternateMenuVisible: Boolean = false
-    private lateinit var categories: List<Category>
+    private var categories: ArrayList<Category> = ArrayList()
     private var selectedColor: String? = null
     private val colors = listOf(
         "#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9",
@@ -101,7 +101,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         // Inflate the layout for this fragment
         return binding.root
@@ -145,7 +145,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     }
 
-    private fun updateListNote(){
+    private fun updateListNote() {
         val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
         val list = ArrayList<Note>()
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
@@ -153,6 +153,9 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                 list.clear()
                 if (snapshot.exists()) {
                     for (issue in snapshot.children) {
+                        if (issue.getValue(Note::class.java)!!.color.isNullOrEmpty()) {
+                            issue.getValue(Note::class.java)!!.color = null
+                        }
                         list.add(issue.getValue(Note::class.java)!!)
                     }
                     if (list.isNotEmpty()) {
@@ -166,6 +169,24 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
+        })
+    }
+
+    private fun updateListCategories() {
+        val myRef = database.getReference("Category").child(mAuth.currentUser!!.uid)
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                if (snapshot.exists()) {
+                    for (issue in snapshot.children) {
+                        categories.add(issue.getValue(Category::class.java)!!)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
         })
     }
 
@@ -223,6 +244,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         binding.listNoteRecyclerView.adapter = noteAdapter
 
         updateListNote()
+
+        updateListCategories()
 
 //        activity?.let {
 //            noteViewModel.getAllNote().observe(viewLifecycleOwner) { note ->
@@ -336,18 +359,22 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                 }
 
                 // Tạo danh sách NoteCategoryCrossRef để liên kết note với category
-                val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
+                //val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
                 val selectedNotes = noteAdapter.getSelectedItems()
 
                 for (noteId in selectedNotes.map { it.id }) {
-                    noteCategoryViewModel.deleteNoteCategoryCrossRefs(noteId)
-                    for (categoryId in selectedCategories.map { it.id }) {
-                        noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
+                    // noteCategoryViewModel.deleteNoteCategoryCrossRefs(noteId)
+                    for (category in selectedCategories) {
+                        //noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
+                        val myRef = FirebaseDatabase.getInstance().getReference("notes").child(
+                            FirebaseAuth.getInstance().currentUser!!.uid).child(noteId.toString()).child("category")
+                        val newCate = Category(category.id, category.categoryName)
+                        myRef.setValue(newCate)
                     }
                 }
 
                 // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
-                noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
+                //noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
 
                 Toast.makeText(
                     requireContext(),
@@ -512,7 +539,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_WRITE_PERMISSION) {

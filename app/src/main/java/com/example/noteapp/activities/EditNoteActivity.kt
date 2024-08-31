@@ -766,13 +766,13 @@ class EditNoteActivity : AppCompatActivity(), OnColorClickListener {
         val noteTitle = binding.edtTitle.text.toString()
         val noteContent = Html.toHtml(binding.edtContent.text)
         val note =
-            Note(noteId, noteTitle, noteContent, getCurrentTime(), created!!, color, false)
+            Note(id, noteTitle, noteContent, getCurrentTime(), created!!, color, false)
         Toast.makeText(this, "Saved", Toast.LENGTH_SHORT).show()
 
         val database = FirebaseDatabase.getInstance()
         val mAuth = FirebaseAuth.getInstance()
         val user = mAuth.currentUser
-        val myRef = database.getReference("notes")//.child(user!!.uid)
+        val myRef = database.getReference("notes").child(user!!.uid)
         myRef.child(noteId.toString()).setValue(note)
     }
 

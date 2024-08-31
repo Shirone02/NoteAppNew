@@ -13,13 +13,20 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapp.R
 import com.example.noteapp.activities.MainActivity
 import com.example.noteapp.listeners.OnItemClickListener
+import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class ListNoteAdapter(
     private val context: Context,
@@ -40,6 +47,8 @@ class ListNoteAdapter(
 
     private lateinit var categoryViewModel: CategoryViewModel
     private lateinit var noteViewModel: NoteViewModel
+    private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val mAuth: FirebaseAuth = FirebaseAuth.getInstance()
     var isCreated = false
 
     inner class viewholder(itemView: View) : RecyclerView.ViewHolder(itemView) {
@@ -76,7 +85,26 @@ class ListNoteAdapter(
             holder.time.text = "Created: " + differ.currentList[position].created
         }
 
-        val categoryList = categoryViewModel.getCategoryNameById(differ.currentList[position].id)
+        //val categoryList = categoryViewModel.getCategoryNameById(differ.currentList[position].id)
+        val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
+            .child(differ.currentList[position].id.toString()).child("category")
+        val categoryList = ArrayList<Category>()
+
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                categoryList.clear()
+                if (snapshot.exists()) {
+                    for (issue in snapshot.children) {
+                        categoryList.add(issue.getValue(Category::class.java)!!)
+                    }
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+
         if (categoryList.size > 2) {
             holder.category.text =
                 "${categoryList[0]}, ${categoryList[1]}, (+${categoryList.size - 2})"

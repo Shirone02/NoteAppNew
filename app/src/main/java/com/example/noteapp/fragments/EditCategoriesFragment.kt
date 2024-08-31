@@ -7,13 +7,20 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.appcompat.widget.Toolbar
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteapp.R
 import com.example.noteapp.activities.MainActivity
 import com.example.noteapp.adapter.ListCategoryAdapter
 import com.example.noteapp.databinding.FragmentEditCategoriesBinding
 import com.example.noteapp.models.Category
+import com.example.noteapp.models.Note
 import com.example.noteapp.viewmodel.CategoryViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class EditCategoriesFragment : Fragment() {
 
@@ -24,6 +31,9 @@ class EditCategoriesFragment : Fragment() {
     private lateinit var categoryViewModel: CategoryViewModel
     private lateinit var categoryAdapter: ListCategoryAdapter
     private lateinit var editView: View
+    private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
+    private val mAuth: FirebaseAuth = FirebaseAuth.getInstance()
+    private var newCategoryId: Int = 0
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -52,8 +62,13 @@ class EditCategoriesFragment : Fragment() {
 
     // thêm category
     private fun addCategory() {
-        val newCategory = Category(0, binding.newCateName.text.toString())
-        categoryViewModel.addCategory(newCategory)
+        val newCategory = Category(newCategoryId, binding.newCateName.text.toString())
+        val user = mAuth.currentUser
+        val myRef = database.getReference("Category").child(user!!.uid).child(newCategory.id.toString())
+
+        myRef.setValue(newCategory)
+//        categoryViewModel.addCategory(newCategory)
+
         binding.newCateName.text = null
 
         Toast.makeText(context, "Add successful !!!", Toast.LENGTH_SHORT).show()
@@ -65,12 +80,44 @@ class EditCategoriesFragment : Fragment() {
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.categoryRecyclerView.adapter = categoryAdapter
 
-        activity?.let {
-            categoryViewModel.getAllCategory().observe(viewLifecycleOwner) { category ->
-                categoryAdapter.differ.submitList(category)
-                updateUI(category)
+//        activity?.let {
+//            categoryViewModel.getAllCategory().observe(viewLifecycleOwner) { category ->
+//                categoryAdapter.differ.submitList(category)
+//                updateUI(category)
+//            }
+//        }
+
+        updateListCategories()
+    }
+
+    private fun updateListCategories() {
+        val myRef = database.getReference("Category").child(mAuth.currentUser!!.uid)
+        val list = ArrayList<Category>()
+        myRef.addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                list.clear()
+                if(snapshot.exists()){
+                    for(issue in snapshot.children){
+                        list.add(issue.getValue(Category::class.java)!!)
+                    }
+
+                    if (list.isNotEmpty()) {
+                        binding.categoryRecyclerView.layoutManager = GridLayoutManager(context, 1)
+                        categoryAdapter.differ.submitList(list)
+                        binding.categoryRecyclerView.adapter = categoryAdapter
+                        newCategoryId += 1
+                    }
+                    else {
+                        newCategoryId = 0
+                    }
+                }
             }
-        }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
     }
 
     private fun updateUI(category: List<Category>) {
