@@ -35,6 +35,7 @@ class EditCategoriesFragment : Fragment() {
     private val database: FirebaseDatabase = FirebaseDatabase.getInstance()
     private val mAuth: FirebaseAuth = FirebaseAuth.getInstance()
     private var newCategoryId: Int = 0
+    var lastId = 0
 
 
     override fun onCreateView(
@@ -64,7 +65,8 @@ class EditCategoriesFragment : Fragment() {
 
     // thêm category
     private fun addCategory() {
-        val newCategory = Category(0, binding.newCateName.text.toString())
+        val newId = if (lastId == 0) 1 else lastId + 1
+        val newCategory = Category(newId, binding.newCateName.text.toString())
         val user = mAuth.currentUser
         val myRef = database.getReference("Category").child(user!!.uid).child(newCategory.id.toString())
 
@@ -98,6 +100,7 @@ class EditCategoriesFragment : Fragment() {
             override fun onDataChange(snapshot: DataSnapshot) {
                 list.clear()
                 if(snapshot.exists()){
+                    lastId = snapshot.children.last().key?.toIntOrNull() ?: 0
                     for(issue in snapshot.children){
                         list.add(issue.getValue(Category::class.java)!!)
                     }
@@ -107,9 +110,6 @@ class EditCategoriesFragment : Fragment() {
                         categoryAdapter.differ.submitList(list)
                         binding.categoryRecyclerView.adapter = categoryAdapter
                         newCategoryId += 1
-                    }
-                    else {
-                        newCategoryId = 0
                     }
                 }
             }
