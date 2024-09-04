@@ -358,15 +358,20 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                 val noteCategoryCrossRefs = mutableListOf<NoteCategoryCrossRef>()
                 val selectedNotes = noteAdapter.getSelectedItems()
 
-                for (noteId in selectedNotes.map { it.id }) {
-                    //noteCategoryViewModel.deleteNoteCategoryCrossRefs(noteId)
+//                for (noteId in selectedNotes.map { it.id }) {
+//                    //noteCategoryViewModel.deleteNoteCategoryCrossRefs(noteId)
+//                    for (category in selectedCategories) {
+//                        //noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
+//                        cateRef.child(category.id.toString())
+//                        val newCate = Category(category.id, category.categoryName)
+//                    }
+//                }
 
-                    for (category in selectedCategories) {
-                        //noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
-                        val myRef = FirebaseDatabase.getInstance().getReference("notes").child(
-                            FirebaseAuth.getInstance().currentUser!!.uid).child(noteId.toString()).child("category")
-                        val newCate = Category(category.id, category.categoryName)
-                        myRef.setValue(newCate)
+                for(categoryId in selectedCategories.map{it.id}){
+                    for(note in selectedNotes){
+                        val cateRef = FirebaseDatabase.getInstance().getReference("note_cate").child(
+                            FirebaseAuth.getInstance().currentUser!!.uid).child(categoryId.toString()).child(note.id.toString())
+                        cateRef.setValue(note)
                     }
                 }
 

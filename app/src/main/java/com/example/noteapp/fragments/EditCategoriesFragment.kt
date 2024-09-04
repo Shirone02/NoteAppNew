@@ -74,6 +74,7 @@ class EditCategoriesFragment : Fragment() {
        // categoryViewModel.addCategory(newCategory)
         binding.newCateName.text = null
 
+        updateListCategories()
         Toast.makeText(context, "Add successful !!!", Toast.LENGTH_SHORT).show()
     }
 
@@ -110,6 +111,7 @@ class EditCategoriesFragment : Fragment() {
                         categoryAdapter.differ.submitList(list)
                         binding.categoryRecyclerView.adapter = categoryAdapter
                         newCategoryId += 1
+                        (activity as MainActivity).addCategoriesToDrawer(list)
                     }
                 }
             }

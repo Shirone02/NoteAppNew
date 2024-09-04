@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
         })
     }
 
-    private fun addCategoriesToDrawer(categories: List<Category>) {
+     fun addCategoriesToDrawer(categories: List<Category>) {
         val menuCategory = binding.navView.menu.findItem(R.id.categories)?.subMenu ?: return
 
         // Xóa các mục cũ trước khi thêm mới

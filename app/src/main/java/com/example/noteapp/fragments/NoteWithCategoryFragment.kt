@@ -63,7 +63,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View? {
 
         return binding.root
@@ -189,9 +189,10 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     }
 
     private fun updateListNote() {
-        val myRef = FirebaseDatabase.getInstance().getReference("notes").child(FirebaseAuth.getInstance().currentUser!!.uid)
-        val cateRef = FirebaseDatabase.getInstance().getReference("Category").child(FirebaseAuth.getInstance().currentUser!!.uid)
-        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+        val cateRef = FirebaseDatabase.getInstance().getReference("note_cate")
+            .child(FirebaseAuth.getInstance().currentUser!!.uid).child(categoryId.toString())
+
+        cateRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 list.clear()
                 if (snapshot.exists()) {
