@@ -3,6 +3,7 @@ package com.example.noteapp.fragments
 import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
@@ -76,7 +77,11 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
         "#DCEDC8", "#F0F4C3", "#FFECB3", "#FFE0B2", "#FFCCBC",
         "#D7CCC8", "#F5F5F5", "#CFD8DC", "#FF8A80", "#FF80AB"
     )
-
+    companion object {
+        private const val READ_FILE_REQUEST_CODE = 101
+        private const val REQUEST_WRITE_PERMISSION = 1001
+        private const val REQUEST_CODE_PICK_DIRECTORY = 1002
+    }
 
 
     override fun onCreateView(
@@ -330,8 +335,6 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     private fun deleteSelectedItem() {
         val selectedNotes = noteAdapter.getSelectedItems()
         val selectedIds = selectedNotes.map { it.id }
-        val database = FirebaseDatabase.getInstance()
-        val mAuth = FirebaseAuth.getInstance()
 
         val cateRef = FirebaseDatabase.getInstance().getReference("note_cate")
             .child(FirebaseAuth.getInstance().currentUser!!.uid).child(categoryId.toString())
@@ -442,6 +445,9 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
 
             R.id.selectAll -> {
                 noteAdapter.selectAllItem()
+                isAlternateMenuVisible = true
+                changeBackNavigationIcon()
+                requireActivity().invalidateOptionsMenu()
                 updateSelectedCount()
                 true
             }
@@ -456,6 +462,20 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
                 true
             }
 
+            R.id.export_notes_to_text_file -> {
+                selectDirectory()
+                true
+            }
+
+            R.id.import_text_files -> {
+                openTextFile()
+                true
+            }
+
+            R.id.Colorize -> {
+                showColorPickerDialog()
+                true
+            }
             else -> {
                 false
             }
@@ -474,6 +494,36 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
             searchNote(newText)
         }
         return true
+    }
+
+    override fun onRequestPermissionsResult(
+        requestCode: Int,
+        permissions: Array<out String>,
+        grantResults: IntArray
+    ) {
+        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
+        if (requestCode == REQUEST_WRITE_PERMISSION) {
+            if ((grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED)) {
+                selectDirectory()
+            } else {
+                Toast.makeText(context, "Permission denied", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+    }
+
+    private fun openTextFile() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT).apply {
+            addCategory(Intent.CATEGORY_OPENABLE)
+            type = "text/plain" // Loại tệp văn bản
+            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+        }
+        startActivityForResult(intent, READ_FILE_REQUEST_CODE)
+    }
+
+    private fun selectDirectory() {
+        val intent = Intent(Intent.ACTION_OPEN_DOCUMENT_TREE)
+        startActivityForResult(intent, REQUEST_CODE_PICK_DIRECTORY)
     }
 
     @SuppressLint("InflateParams")
