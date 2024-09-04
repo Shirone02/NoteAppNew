@@ -440,6 +440,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         selectedIds.forEach { id ->
             noteRef.child(id.toString()).removeValue()
         }
+
         categoriesIds.forEach{ cateId ->
             selectedIds.forEach{ noteId ->
                 noteCateRef.child(cateId.toString()).child(noteId.toString()).removeValue()
