@@ -128,11 +128,11 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
             menuItem.setIcon(R.drawable.ic_categorized)
         }
 
-        if (categories.isNotEmpty()) {
-            val menuItem =
-                menuCategory.add(Menu.NONE, R.id.fragment_uncategorized, Menu.NONE, "Uncategorized")
-            menuItem.setIcon(R.drawable.ic_uncategorized)
-        }
+//        if (categories.isNotEmpty()) {
+//            val menuItem =
+//                menuCategory.add(Menu.NONE, R.id.fragment_uncategorized, Menu.NONE, "Uncategorized")
+//            menuItem.setIcon(R.drawable.ic_uncategorized)
+//        }
 
         menuCategory.add(Menu.NONE, R.id.fragment_edit_categories, Menu.NONE, "Edit categories")
             .setIcon(R.drawable.ic_edit_categories)
@@ -191,8 +191,8 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
 //
 //            R.id.nav_policy -> startActivity(Intent(this, PrivacyPolicyActivity::class.java))
 
-            R.id.fragment_uncategorized -> supportFragmentManager.beginTransaction()
-                .replace(R.id.fragment_container, UncategorizedFragment()).commit()
+//            R.id.fragment_uncategorized -> supportFragmentManager.beginTransaction()
+//                .replace(R.id.fragment_container, UncategorizedFragment()).commit()
 
             R.id.fragment_edit_categories -> supportFragmentManager.beginTransaction()
                 .replace(R.id.fragment_container, EditCategoriesFragment()).commit()

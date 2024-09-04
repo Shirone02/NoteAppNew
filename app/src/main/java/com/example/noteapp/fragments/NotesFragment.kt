@@ -494,19 +494,19 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private fun sortByTitleZToA() {
-        sortedList = list.sortedByDescending { it.title }.toMutableList()
+        sortedList = list.sortedByDescending { it.title.toLowerCase() }.toMutableList()
     }
 
     private fun sortByTitleAToZ() {
-        sortedList = list.sortedBy { it.title }.toMutableList()
+        sortedList = list.sortedBy { it.title.toLowerCase() }.toMutableList()
     }
 
     private fun sortByEditDateOldest() {
-        sortedList = list.sortedBy { it.time }.toMutableList()
+        sortedList = list.sortedBy { it.time.length }.toMutableList()
     }
 
     private fun sortByEditDateNewest() {
-        sortedList = list.sortedByDescending { it.time }.toMutableList()
+        sortedList = list.sortedByDescending { it.time.length }.toMutableList()
     }
 
     //tim kiem

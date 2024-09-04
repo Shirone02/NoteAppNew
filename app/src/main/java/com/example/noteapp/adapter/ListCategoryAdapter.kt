@@ -15,6 +15,8 @@ import com.example.noteapp.R
 import com.example.noteapp.activities.MainActivity
 import com.example.noteapp.models.Category
 import com.example.noteapp.viewmodel.CategoryViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class ListCategoryAdapter(private val context: Context) :
     RecyclerView.Adapter<ListCategoryAdapter.viewholder>() {
@@ -22,7 +24,7 @@ class ListCategoryAdapter(private val context: Context) :
     inner class viewholder(itemView: View) : RecyclerView.ViewHolder(itemView) {
 
         var categoryName: TextView = itemView.findViewById(R.id.categoryName)
-        var editBtn: ImageView = itemView.findViewById(R.id.editBtn)
+//        var editBtn: ImageView = itemView.findViewById(R.id.editBtn)
         var deleteBtn: ImageView = itemView.findViewById(R.id.deleteBtn)
 
     }
@@ -54,9 +56,9 @@ class ListCategoryAdapter(private val context: Context) :
     override fun onBindViewHolder(holder: ListCategoryAdapter.viewholder, position: Int) {
         holder.categoryName.text = differ.currentList[position].categoryName
 
-        holder.editBtn.setOnClickListener {
-            showEditCategoryDialog(context, position)
-        }
+//        holder.editBtn.setOnClickListener {
+//            showEditCategoryDialog(context, position)
+//        }
 
         holder.deleteBtn.setOnClickListener {
             showDeleteCategoryDialog(context, position)
@@ -71,7 +73,13 @@ class ListCategoryAdapter(private val context: Context) :
                 dialog.dismiss()
             }
             .setPositiveButton("OK") { dialog, _ ->
-                categoryViewModel.deleteCategory(differ.currentList[position])
+                val cateRef = FirebaseDatabase.getInstance().getReference("Category")
+                    .child(FirebaseAuth.getInstance().currentUser!!.uid).child(differ.currentList[position].id.toString())
+                cateRef.removeValue()
+                val cateRef1 = FirebaseDatabase.getInstance().getReference("note_cate")
+                    .child(FirebaseAuth.getInstance().currentUser!!.uid).child(differ.currentList[position].id.toString())
+                cateRef1.removeValue()
+//                categoryViewModel.deleteCategory(differ.currentList[position])
                 notifyDataSetChanged()
                 dialog.dismiss()
             }.create()
@@ -95,7 +103,10 @@ class ListCategoryAdapter(private val context: Context) :
                 val inputText = editText.text.toString()
 
                 val newCategory = Category(differ.currentList[position].id, inputText)
-                categoryViewModel.updateCategory(newCategory)
+                val cateRef = FirebaseDatabase.getInstance().getReference("Category")
+                    .child(FirebaseAuth.getInstance().currentUser!!.uid).child(differ.currentList[position].id.toString())
+                cateRef.setValue(newCategory)
+//                categoryViewModel.updateCategory(newCategory)
                 notifyDataSetChanged()
                 dialog.dismiss()
             }.create()

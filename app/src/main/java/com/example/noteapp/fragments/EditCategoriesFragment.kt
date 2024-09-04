@@ -108,6 +108,7 @@ class EditCategoriesFragment : Fragment() {
 
                     if (list.isNotEmpty()) {
                         binding.categoryRecyclerView.layoutManager = GridLayoutManager(context, 1)
+                        categoryAdapter.differ.submitList(null)
                         categoryAdapter.differ.submitList(list)
                         binding.categoryRecyclerView.adapter = categoryAdapter
                         newCategoryId += 1
