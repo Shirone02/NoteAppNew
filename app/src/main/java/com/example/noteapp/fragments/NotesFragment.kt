@@ -433,10 +433,17 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     private fun deleteSelectedItem() {
         val selectedNotes = noteAdapter.getSelectedItems()
         val selectedIds = selectedNotes.map { it.id }
+        val categoriesIds = categories.map { it.id }
 
         val noteRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
+        val noteCateRef = database.getReference("note_cate").child(mAuth.currentUser!!.uid)
         selectedIds.forEach { id ->
             noteRef.child(id.toString()).removeValue()
+        }
+        categoriesIds.forEach{ cateId ->
+            selectedIds.forEach{ noteId ->
+                noteCateRef.child(cateId.toString()).child(noteId.toString()).removeValue()
+            }
         }
         noteAdapter.removeSelectedItems()
         updateSelectedCount()
