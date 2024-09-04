@@ -1,17 +1,20 @@
 package com.example.noteapp.fragments
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
 import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.Toast
 import androidx.appcompat.widget.SearchView
 import androidx.appcompat.widget.Toolbar
@@ -24,12 +27,15 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapp.R
 import com.example.noteapp.activities.EditNoteActivity
 import com.example.noteapp.activities.MainActivity
 import com.example.noteapp.adapter.ListCategoryAdapter
+import com.example.noteapp.adapter.ListColorAdapter
 import com.example.noteapp.adapter.ListNoteAdapter
 import com.example.noteapp.databinding.FragmentNoteWithCategoryBinding
+import com.example.noteapp.listeners.OnColorClickListener
 import com.example.noteapp.listeners.OnItemClickListener
 import com.example.noteapp.models.Category
 import com.example.noteapp.models.Note
@@ -43,7 +49,8 @@ import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
 
-class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTextListener {
+class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTextListener,
+    OnColorClickListener {
 
     private val binding: FragmentNoteWithCategoryBinding by lazy {
         FragmentNoteWithCategoryBinding.inflate(layoutInflater)
@@ -60,6 +67,17 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     private lateinit var currentList: List<Note>
     private var isAlternateMenuVisible: Boolean = false
     val list = ArrayList<Note>()
+    private var sortedList = mutableListOf<Note>()
+    private var selectedColor: String? = null
+    private lateinit var colorAdapter: ListColorAdapter
+    private val colors = listOf(
+        "#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9",
+        "#BBDEFB", "#B3E5FC", "#B2EBF2", "#B2DFDB", "#C8E6C9",
+        "#DCEDC8", "#F0F4C3", "#FFECB3", "#FFE0B2", "#FFCCBC",
+        "#D7CCC8", "#F5F5F5", "#CFD8DC", "#FF8A80", "#FF80AB"
+    )
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -146,6 +164,9 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
                     intent.putExtra("id", note.id)
                     intent.putExtra("title", note.title)
                     intent.putExtra("content", note.content)
+                    intent.putExtra("created", note.created)
+                    intent.putExtra("time", note.time)
+                    intent.putExtra("color", note.color)
                     startActivity(intent)
                 }
 
@@ -202,6 +223,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
                         }
                         list.add(issue.getValue(Note::class.java)!!)
                     }
+                    sortedList = list.toMutableList()
                     updateRecyclerView()
                 }
             }
@@ -213,10 +235,10 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     }
 
     private fun updateRecyclerView() {
-        if (list.isNotEmpty()) {
+        if (sortedList.isNotEmpty()) {
             binding.noteWithCategoryRcv.layoutManager = GridLayoutManager(context, 1)
             noteAdapter.differ.submitList(null)
-            noteAdapter.differ.submitList(list)
+            noteAdapter.differ.submitList(sortedList)
             binding.noteWithCategoryRcv.adapter = noteAdapter
         }
     }
@@ -308,8 +330,16 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     private fun deleteSelectedItem() {
         val selectedNotes = noteAdapter.getSelectedItems()
         val selectedIds = selectedNotes.map { it.id }
-        noteViewModel.deleteNotes(selectedIds)
+        val database = FirebaseDatabase.getInstance()
+        val mAuth = FirebaseAuth.getInstance()
+
+        val cateRef = FirebaseDatabase.getInstance().getReference("note_cate")
+            .child(FirebaseAuth.getInstance().currentUser!!.uid).child(categoryId.toString())
+        selectedIds.forEach { id ->
+            cateRef.child(id.toString()).removeValue()
+        }
         noteAdapter.removeSelectedItems()
+        updateSelectedCount()
     }
 
     private fun showOptionDialog() {
@@ -318,66 +348,65 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
             "edit date: from oldest",
             "title: A to Z",
             "title: Z to A",
-            "creation date: from newest",
-            "creation date: from oldest"
         )
 
         var selectedOption = 0
-        val noteList = noteAdapter.differ.currentList
-        val builder: androidx.appcompat.app.AlertDialog.Builder =
-            androidx.appcompat.app.AlertDialog.Builder(requireContext())
+
+        val builder: androidx.appcompat.app.AlertDialog.Builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
         builder.setTitle("Sort by")
             .setPositiveButton("Sort") { dialog, which ->
                 when (selectedOption) {
-                    0 -> sortByEditDateNewest(noteList)
-                    1 -> sortByEditDateOldest(noteList)
-                    2 -> sortByTitleAToZ(noteList)
-                    3 -> sortByTitleZToA(noteList)
-                    4 -> sortByCreationDateNewest(noteList)
-                    5 -> sortByCreationDateOldest(noteList)
+                    0 -> sortByEditDateNewest()
+                    1 -> sortByEditDateOldest()
+                    2 -> sortByTitleAToZ()
+                    3 -> sortByTitleZToA()
                 }
+                updateRecyclerView()
             }
             .setNegativeButton("Cancel") { dialog, which ->
                 dialog.dismiss()
             }
             .setSingleChoiceItems(sortOption, selectedOption) { dialog, which ->
                 selectedOption = which
+                if (selectedOption == 4 || selectedOption == 5) {
+                    noteAdapter.isCreated = true
+                } else {
+                    noteAdapter.isCreated = true
+                }
             }
 
         builder.create().show()
     }
 
-    private fun sortByCreationDateOldest(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedBy { it.id })
+    private fun sortByTitleZToA() {
+        sortedList = list.sortedByDescending { it.title.toLowerCase() }.toMutableList()
     }
 
-    private fun sortByCreationDateNewest(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedByDescending { it.id })
+    private fun sortByTitleAToZ() {
+        sortedList = list.sortedBy { it.title.toLowerCase() }.toMutableList()
     }
 
-    private fun sortByTitleZToA(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedByDescending { it.title })
+    private fun sortByEditDateOldest() {
+        sortedList = list.sortedBy { it.time.length }.toMutableList()
     }
 
-    private fun sortByTitleAToZ(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedBy { it.title })
-    }
-
-    private fun sortByEditDateOldest(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedBy { it.time })
-    }
-
-    private fun sortByEditDateNewest(noteList: List<Note>) {
-        return noteAdapter.differ.submitList(noteList.sortedByDescending { it.time })
+    private fun sortByEditDateNewest() {
+        sortedList = list.sortedByDescending { it.time.length }.toMutableList()
     }
 
     private fun searchNote(query: String?) {
+        val searchList = ArrayList<Note>()
         if (query != null) {
             if (query.isEmpty()) {
-                noteAdapter.differ.submitList(currentList)
+                noteAdapter.differ.submitList(null)
+                noteAdapter.differ.submitList(list)
             } else {
-                noteViewModel.searchNote("%$query%").observe(this) { notes ->
-                    noteAdapter.differ.submitList(notes)
+                for (it in list) {
+                    if (it.title.toLowerCase().contains(query.toLowerCase())) {
+                        searchList.add(it)
+                    }
+                    noteAdapter.differ.submitList(null)
+                    noteAdapter.differ.submitList(searchList)
                 }
             }
         }
@@ -439,11 +468,76 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
 
     override fun onQueryTextChange(newText: String?): Boolean {
         if (newText.isNullOrEmpty()) {
-            noteAdapter.differ.submitList(currentList)
+            noteAdapter.differ.submitList(null)
+            noteAdapter.differ.submitList(list)
         } else {
             searchNote(newText)
         }
         return true
+    }
+
+    @SuppressLint("InflateParams")
+    private fun showColorPickerDialog() {
+        val dialogView = layoutInflater.inflate(R.layout.dialog_colorize, null)
+        val recyclerView = dialogView.findViewById<RecyclerView>(R.id.rcvColor)
+        val removeColor = dialogView.findViewById<Button>(R.id.removeColorBtn)
+        var isRemove = false
+
+        recyclerView.layoutManager = GridLayoutManager(context, 5)
+        colorAdapter = ListColorAdapter(colors, this)
+        recyclerView.adapter = colorAdapter
+
+        removeColor.setOnClickListener {
+            isRemove = true
+        }
+
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setView(dialogView)
+            .setNegativeButton("CANCEL") { dialog, _ ->
+                dialog.dismiss()
+            }.setPositiveButton("OK") { dialog, which ->
+                if (isRemove) selectedColor = null
+                handleOkButtonClick()
+                dialog.dismiss()
+            }
+
+        builder.create().show()
+
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    private fun handleOkButtonClick() {
+        val database = FirebaseDatabase.getInstance()
+        val mAuth = FirebaseAuth.getInstance()
+        val selectedNotes = noteAdapter.getSelectedItems()
+        val cateRef = FirebaseDatabase.getInstance().getReference("note_cate")
+            .child(FirebaseAuth.getInstance().currentUser!!.uid).child(categoryId.toString())
+
+        selectedColor.let { color ->
+            if (selectedColor.isNullOrEmpty()) {
+                selectedNotes.forEach { note ->
+                    note.color = color
+                    Log.d("TAG", "handleOkButtonClick: ${note.color}")
+                    cateRef.child((note.id).toString()).setValue(note)
+                }
+            } else {
+                selectedNotes.forEach { note ->
+                    note.color = color
+                    Log.d("TAG", "handleOkButtonClick: ${note.color}")
+                    cateRef.child((note.id).toString()).setValue(note)
+                }
+            }
+        }
+
+        noteAdapter.notifyDataSetChanged()
+        isAlternateMenuVisible = !isAlternateMenuVisible
+        changeDrawerNavigationIcon()
+        requireActivity().invalidateOptionsMenu()
+        updateSelectedCount()
+    }
+
+    override fun onColorClick(color: String) {
+        selectedColor = color
     }
 
 }
