@@ -22,6 +22,7 @@ import androidx.core.view.MenuProvider
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Lifecycle
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.noteapp.R
 import com.example.noteapp.activities.EditNoteActivity
@@ -36,6 +37,11 @@ import com.example.noteapp.models.NoteCategoryCrossRef
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.example.noteapp.viewmodel.NoteCategoryViewModel
 import com.example.noteapp.viewmodel.NoteViewModel
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTextListener {
 
@@ -53,6 +59,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     private lateinit var categories: List<Category>
     private lateinit var currentList: List<Note>
     private var isAlternateMenuVisible: Boolean = false
+    val list = ArrayList<Note>()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -163,19 +170,53 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
             LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         binding.noteWithCategoryRcv.adapter = noteAdapter
 
-        activity?.let {
-            noteViewModel.getNotesByCategory(categoryId).observe(viewLifecycleOwner) { note ->
-                noteAdapter.differ.submitList(note)
-                currentList = noteAdapter.differ.currentList
-                updateUI(note)
-            }
-        }
+//        activity?.let {
+//            noteViewModel.getNotesByCategory(categoryId).observe(viewLifecycleOwner) { note ->
+//                noteAdapter.differ.submitList(note)
+//                currentList = noteAdapter.differ.currentList
+//                updateUI(note)
+//            }
+//        }
+
+        updateListNote()
 
         activity?.let {
             categoryViewModel.getAllCategory().observe(viewLifecycleOwner) { category ->
                 categoryAdapter.differ.submitList(category)
                 categories = categoryAdapter.differ.currentList
             }
+        }
+    }
+
+    private fun updateListNote() {
+        val myRef = FirebaseDatabase.getInstance().getReference("notes").child(FirebaseAuth.getInstance().currentUser!!.uid)
+        val cateRef = FirebaseDatabase.getInstance().getReference("Category").child(FirebaseAuth.getInstance().currentUser!!.uid)
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
+            override fun onDataChange(snapshot: DataSnapshot) {
+                list.clear()
+                if (snapshot.exists()) {
+                    for (issue in snapshot.children) {
+                        if (issue.getValue(Note::class.java)!!.color.isNullOrEmpty()) {
+                            issue.getValue(Note::class.java)!!.color = null
+                        }
+                        list.add(issue.getValue(Note::class.java)!!)
+                    }
+                    updateRecyclerView()
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+        })
+    }
+
+    private fun updateRecyclerView() {
+        if (list.isNotEmpty()) {
+            binding.noteWithCategoryRcv.layoutManager = GridLayoutManager(context, 1)
+            noteAdapter.differ.submitList(null)
+            noteAdapter.differ.submitList(list)
+            binding.noteWithCategoryRcv.adapter = noteAdapter
         }
     }
 

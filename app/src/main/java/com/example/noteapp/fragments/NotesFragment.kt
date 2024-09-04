@@ -86,7 +86,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     private lateinit var noteView: View
     private var isAlternateMenuVisible: Boolean = false
-    private lateinit var categories: List<Category>
+    private var categories: ArrayList<Category> = ArrayList()
     private var selectedColor: String? = null
     private val colors = listOf(
         "#FFCDD2", "#F8BBD0", "#E1BEE7", "#D1C4E9", "#C5CAE9",
@@ -125,6 +125,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         database = FirebaseDatabase.getInstance()
         mAuth = FirebaseAuth.getInstance()
 
+        updateListCategories()
+
         setupNoteRecyclerView()
 
         binding.addNoteFab.setOnClickListener {
@@ -138,6 +140,25 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             toolbar.overflowIcon?.setTint(Color.WHITE)
         }
 
+    }
+
+    private fun updateListCategories() {
+        val myRef = FirebaseDatabase.getInstance().getReference("Category").child(FirebaseAuth.getInstance().currentUser!!.uid)
+
+        myRef.addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                categories.clear()
+                if(snapshot.exists()){
+                    for(i in snapshot.children){
+                        categories.add(i.getValue(Category::class.java)!!)
+                    }
+                }
+            }
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
     }
 
     private fun updateListNote(){
@@ -220,6 +241,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         binding.listNoteRecyclerView.adapter = noteAdapter
 
         updateListNote()
+
 
 //        activity?.let {
 //            noteViewModel.getAllNote().observe(viewLifecycleOwner) { note ->
@@ -337,14 +359,19 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
                 val selectedNotes = noteAdapter.getSelectedItems()
 
                 for (noteId in selectedNotes.map { it.id }) {
-                    noteCategoryViewModel.deleteNoteCategoryCrossRefs(noteId)
-                    for (categoryId in selectedCategories.map { it.id }) {
-                        noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
+                    //noteCategoryViewModel.deleteNoteCategoryCrossRefs(noteId)
+
+                    for (category in selectedCategories) {
+                        //noteCategoryCrossRefs.add(NoteCategoryCrossRef(noteId, categoryId))
+                        val myRef = FirebaseDatabase.getInstance().getReference("notes").child(
+                            FirebaseAuth.getInstance().currentUser!!.uid).child(noteId.toString()).child("category")
+                        val newCate = Category(category.id, category.categoryName)
+                        myRef.setValue(newCate)
                     }
                 }
 
                 // Chèn danh sách NoteCategoryCrossRef vào cơ sở dữ liệu
-                noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
+                //noteCategoryViewModel.addListNoteCategory(noteCategoryCrossRefs)
 
                 Toast.makeText(
                     requireContext(),

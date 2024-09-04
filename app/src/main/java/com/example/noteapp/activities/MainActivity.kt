@@ -2,6 +2,7 @@ package com.example.noteapp.activities
 
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import android.view.Menu
 import android.view.MenuItem
 import android.widget.Toast
@@ -33,6 +34,10 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.material.navigation.NavigationView
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
+import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 import com.google.firebase.ktx.Firebase
 
 
@@ -86,9 +91,30 @@ class MainActivity : AppCompatActivity(), NavigationView.OnNavigationItemSelecte
     }
 
     private fun updateCategoryList() {
-        categoryViewModel.getAllCategory().observe(this) { categories ->
-            addCategoriesToDrawer(categories)
-        }
+//        categoryViewModel.getAllCategory().observe(this) { categories ->
+//            addCategoriesToDrawer(categories)
+//        }
+
+        val categories = ArrayList<Category>()
+        val myRef = FirebaseDatabase.getInstance().getReference("Category").child(FirebaseAuth.getInstance().currentUser!!.uid)
+
+        myRef.addListenerForSingleValueEvent(object: ValueEventListener{
+            override fun onDataChange(snapshot: DataSnapshot) {
+                categories.clear()
+                if(snapshot.exists()){
+                    for(i in snapshot.children){
+                        categories.add(i.getValue(Category::class.java)!!)
+                    }
+
+                    addCategoriesToDrawer(categories)
+                }
+            }
+
+            override fun onCancelled(error: DatabaseError) {
+                TODO("Not yet implemented")
+            }
+
+        })
     }
 
     private fun addCategoriesToDrawer(categories: List<Category>) {
