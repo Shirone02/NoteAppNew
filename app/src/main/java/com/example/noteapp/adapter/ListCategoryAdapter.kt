@@ -79,6 +79,8 @@ class ListCategoryAdapter(private val context: Context) :
                 val cateRef1 = FirebaseDatabase.getInstance().getReference("note_cate")
                     .child(FirebaseAuth.getInstance().currentUser!!.uid).child(differ.currentList[position].id.toString())
                 cateRef1.removeValue()
+
+                (context as MainActivity).addCategoriesToDrawer(differ.currentList)
 //                categoryViewModel.deleteCategory(differ.currentList[position])
                 notifyDataSetChanged()
                 dialog.dismiss()

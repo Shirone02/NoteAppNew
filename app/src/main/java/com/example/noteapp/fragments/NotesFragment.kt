@@ -103,7 +103,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
-        savedInstanceState: Bundle?
+        savedInstanceState: Bundle?,
     ): View {
         // Inflate the layout for this fragment
         return binding.root
@@ -143,17 +143,19 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     }
 
     private fun updateListCategories() {
-        val myRef = FirebaseDatabase.getInstance().getReference("Category").child(FirebaseAuth.getInstance().currentUser!!.uid)
+        val myRef = FirebaseDatabase.getInstance().getReference("Category")
+            .child(FirebaseAuth.getInstance().currentUser!!.uid)
 
-        myRef.addListenerForSingleValueEvent(object: ValueEventListener{
+        myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
                 categories.clear()
-                if(snapshot.exists()){
-                    for(i in snapshot.children){
+                if (snapshot.exists()) {
+                    for (i in snapshot.children) {
                         categories.add(i.getValue(Category::class.java)!!)
                     }
                 }
             }
+
             override fun onCancelled(error: DatabaseError) {
                 TODO("Not yet implemented")
             }
@@ -161,7 +163,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
         })
     }
 
-    private fun updateListNote(){
+    private fun updateListNote() {
         val myRef = database.getReference("notes").child(mAuth.currentUser!!.uid)
         myRef.addListenerForSingleValueEvent(object : ValueEventListener {
             override fun onDataChange(snapshot: DataSnapshot) {
@@ -367,10 +369,12 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
 //                    }
 //                }
 
-                for(categoryId in selectedCategories.map{it.id}){
-                    for(note in selectedNotes){
-                        val cateRef = FirebaseDatabase.getInstance().getReference("note_cate").child(
-                            FirebaseAuth.getInstance().currentUser!!.uid).child(categoryId.toString()).child(note.id.toString())
+                for (categoryId in selectedCategories.map { it.id }) {
+                    for (note in selectedNotes) {
+                        val cateRef =
+                            FirebaseDatabase.getInstance().getReference("note_cate").child(
+                                FirebaseAuth.getInstance().currentUser!!.uid
+                            ).child(categoryId.toString()).child(note.id.toString())
                         cateRef.setValue(note)
                     }
                 }
@@ -441,8 +445,8 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
             noteRef.child(id.toString()).removeValue()
         }
 
-        categoriesIds.forEach{ cateId ->
-            selectedIds.forEach{ noteId ->
+        categoriesIds.forEach { cateId ->
+            selectedIds.forEach { noteId ->
                 noteCateRef.child(cateId.toString()).child(noteId.toString()).removeValue()
             }
         }
@@ -557,7 +561,7 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     override fun onRequestPermissionsResult(
         requestCode: Int,
         permissions: Array<out String>,
-        grantResults: IntArray
+        grantResults: IntArray,
     ) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == REQUEST_WRITE_PERMISSION) {
@@ -655,17 +659,22 @@ class NotesFragment : Fragment(R.layout.fragment_notes), MenuProvider, OnQueryTe
     private fun handleSelectedFiles(uris: List<Uri>) {
         for (uri in uris) {
             val note = createNoteFromTextFile(uri)
-            noteViewModel.addNote(note)
+            val noteRef = FirebaseDatabase.getInstance().getReference("notes")
+                .child(FirebaseAuth.getInstance().currentUser!!.uid).child(note.id.toString())
+            noteRef.setValue(note)
+            // noteViewModel.addNote(note)
         }
+        updateListNote()
     }
 
     //tao note tu file txt
     private fun createNoteFromTextFile(uri: Uri): Note {
         val content = readTextTxt(uri)
         val title = getFileName(uri)
+        val newId = if(lastId == 0) 1 else lastId + 1
 
         //tao note moi
-        val note = Note(0, title!!, content, getCurrentTime(), getCurrentTime(), null, false)
+        val note = Note(newId, title!!, content, getCurrentTime(), getCurrentTime(), null, false)
         return note
     }
 
