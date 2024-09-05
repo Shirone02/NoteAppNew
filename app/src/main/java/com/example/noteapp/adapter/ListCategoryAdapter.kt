@@ -1,5 +1,6 @@
 package com.example.noteapp.adapter
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -10,13 +11,17 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.AsyncListDiffer
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.noteapp.R
 import com.example.noteapp.activities.MainActivity
 import com.example.noteapp.models.Category
 import com.example.noteapp.viewmodel.CategoryViewModel
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.DataSnapshot
+import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
+import com.google.firebase.database.ValueEventListener
 
 class ListCategoryAdapter(private val context: Context) :
     RecyclerView.Adapter<ListCategoryAdapter.viewholder>() {
@@ -63,6 +68,7 @@ class ListCategoryAdapter(private val context: Context) :
         holder.deleteBtn.setOnClickListener {
             showDeleteCategoryDialog(context, position)
         }
+
     }
 
     // hien thi hop thoai xoa category
@@ -80,6 +86,12 @@ class ListCategoryAdapter(private val context: Context) :
                     .child(FirebaseAuth.getInstance().currentUser!!.uid).child(differ.currentList[position].id.toString())
                 cateRef1.removeValue()
 //                categoryViewModel.deleteCategory(differ.currentList[position])
+                val mutableList = differ.currentList.toMutableList()
+                mutableList.removeAt(position)
+
+                // Submit updated list to adapter
+                differ.submitList(mutableList)
+                (context as MainActivity).addCategoriesToDrawer(mutableList)
                 notifyDataSetChanged()
                 dialog.dismiss()
             }.create()
@@ -87,6 +99,7 @@ class ListCategoryAdapter(private val context: Context) :
     }
 
     //hien thi hop thoai chinh sua category
+    @SuppressLint("NotifyDataSetChanged")
     private fun showEditCategoryDialog(context: Context, position: Int) {
         // Tạo layout inflater và inflate layout cho hộp thoại
         val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_edit_category, null)
