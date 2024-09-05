@@ -1,11 +1,15 @@
 package com.example.noteapp.fragments
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.AlertDialog
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
+import android.net.Uri
 import android.os.Bundle
+import android.provider.DocumentsContract
+import android.provider.OpenableColumns
 import android.text.SpannableString
 import android.text.style.ForegroundColorSpan
 import android.util.Log
@@ -49,6 +53,12 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import java.io.BufferedReader
+import java.io.IOException
+import java.io.InputStreamReader
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTextListener,
     OnColorClickListener {
@@ -69,6 +79,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
     private var isAlternateMenuVisible: Boolean = false
     val list = ArrayList<Note>()
     private var sortedList = mutableListOf<Note>()
+    var lastId = 1
     private var selectedColor: String? = null
     private lateinit var colorAdapter: ListColorAdapter
     private val colors = listOf(
@@ -222,6 +233,7 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
             override fun onDataChange(snapshot: DataSnapshot) {
                 list.clear()
                 if (snapshot.exists()) {
+                    lastId = snapshot.children.last().key?.toIntOrNull() ?: 0
                     for (issue in snapshot.children) {
                         if (issue.getValue(Note::class.java)!!.color.isNullOrEmpty()) {
                             issue.getValue(Note::class.java)!!.color = null
@@ -588,6 +600,149 @@ class NoteWithCategoryFragment : Fragment(), MenuProvider, SearchView.OnQueryTex
 
     override fun onColorClick(color: String) {
         selectedColor = color
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+
+        if (requestCode == REQUEST_CODE_PICK_DIRECTORY && resultCode == Activity.RESULT_OK) {
+            val uri = data?.data
+            // Lưu Uri bằng cách sử dụng quyền có thể duy trì
+            uri?.let {
+                exportNoteToTextFile(it)
+            }
+        }
+
+        if (requestCode == READ_FILE_REQUEST_CODE && resultCode == Activity.RESULT_OK) {
+            val selectedFile = mutableListOf<Uri>()
+
+            data?.clipData?.let { clipData ->
+                //neu nguoi dung chon nhieu tep
+                for (i in 0 until clipData.itemCount) {
+                    val uri = clipData.getItemAt(i).uri
+                    selectedFile.add(uri)
+                }
+            } ?: run {
+                // neu nguoi dung chi chon 1 tep
+                data?.data?.let { uri ->
+                    Log.d("TAG", "onActivityResult: $uri")
+                    selectedFile.add(uri)
+                }
+            }
+
+            //xu li danh sach cac tep da chon
+            handleSelectedFiles(selectedFile)
+            Toast.makeText(context, "${selectedFile.size} note(s) added", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    //ham xu ly tep
+    private fun handleSelectedFiles(uris: List<Uri>) {
+        for (uri in uris) {
+            val note = createNoteFromTextFile(uri)
+            val cateRef = FirebaseDatabase.getInstance().getReference("note_cate")
+                .child(FirebaseAuth.getInstance().currentUser!!.uid).child(categoryId.toString())
+            cateRef.child((note.id.toString()).toString()).setValue(note)
+//            noteViewModel.addNote(note)
+        }
+        updateListNote()
+    }
+
+    private fun getCurrentTime(): String {
+        val calendar = Calendar.getInstance()
+
+        val formattedDate =
+            SimpleDateFormat("dd/MM/yyyy, HH:mm", Locale.getDefault()).format(calendar.time)
+
+        return formattedDate
+    }
+
+    //tao note tu file txt
+    private fun createNoteFromTextFile(uri: Uri): Note {
+        val content = readTextTxt(uri)
+        val title = getFileName(uri)
+        val newId = if (lastId == 0) 1 else lastId + 1
+
+        //tao note moi
+        val note = Note(newId, title!!, content, getCurrentTime(), getCurrentTime(), null, false)
+        return note
+    }
+
+    //lay ten tep
+    private fun getFileName(uri: Uri): String? {
+        val contentResolver = requireContext().contentResolver
+        var fileTxtName: String? = null
+
+        val cursor = contentResolver.query(uri, null, null, null, null)
+        cursor?.use {
+            if (it.moveToFirst()) {
+                val displayNameIndex = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                val fileName =
+                    if (displayNameIndex != -1) it.getString(displayNameIndex) else "Unknown"
+                fileTxtName = fileName
+            }
+        }
+        return fileTxtName
+    }
+
+    //doc noi dung tu file txt
+    private fun readTextTxt(uri: Uri): String {
+        val inputStream = requireContext().contentResolver.openInputStream(uri)
+        val reader = BufferedReader(InputStreamReader(inputStream))
+        val stringBuilder = StringBuilder()
+        var line: String?
+        try {
+            while (reader.readLine().also { line = it } != null) {
+                stringBuilder.append(line).append("\n")
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        } finally {
+            try {
+                inputStream?.close()
+            } catch (e: IOException) {
+                e.printStackTrace()
+            }
+        }
+        return stringBuilder.toString()
+    }
+
+    private fun exportNoteToTextFile(uri: Uri) {
+        var selectedNotes = noteAdapter.getSelectedItems()
+        if (selectedNotes.isEmpty()) {
+            selectedNotes = noteAdapter.differ.currentList.toSet()
+        }
+        selectedNotes.forEach { note ->
+            val fileName = "${note.title}.txt"
+            createFile(uri, fileName, note.content)
+        }
+        Toast.makeText(
+            requireContext(),
+            "${selectedNotes.size} note(s) exported",
+            Toast.LENGTH_SHORT
+        )
+            .show()
+    }
+    private fun createFile(uri: Uri, fileName: String, content: String) {
+        try {
+            val documentUri = DocumentsContract.buildDocumentUriUsingTree(
+                uri,
+                DocumentsContract.getTreeDocumentId(uri)
+            )
+            val docUri = DocumentsContract.createDocument(
+                requireContext().contentResolver,
+                documentUri,
+                "text/plain",
+                fileName
+            )
+            docUri?.let {
+                requireContext().contentResolver.openOutputStream(it)?.use { outputStream ->
+                    outputStream.write(content.toByteArray())
+                }
+            }
+        } catch (e: IOException) {
+            e.printStackTrace()
+        }
     }
 
 }
